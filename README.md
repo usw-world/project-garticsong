@@ -1,4 +1,4 @@
-# svelte app
+<!-- # svelte app
 
 This is a project template for [Svelte](https://svelte.dev) apps. It lives at https://github.com/sveltejs/template-webpack.
 
@@ -61,4 +61,4 @@ Then, from within your project folder:
 ```bash
 npm run build
 surge public
-```
+``` -->
