@@ -15,12 +15,18 @@ const io = new Server(server, {
 });
 
 io.on("connection", socket => {
-    // console.log("someone join relay server, someone : ", socket);
-    // io.emit("offer", {})
+    socket.on("offer", payload => {
+        console.log("payload :: ", payload.offer);
+        io.emit("offer", payload.offer);
+    })
+    socket.on("answer", payload => {
+        console.log("payload :: ", payload);
+        socket.broadcast.emit("answer", payload);
+    })
+    socket.on("newIcecandidate", payload => {
+        io.emit("iceCandidate", payload);
+    })
 });
-io.on("usoock", (socket) => {
-    console.log('usoock is comming');
-})
 
 io.listen(3000);
 
