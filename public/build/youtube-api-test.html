@@ -20,8 +20,7 @@
 </head>
 <body>
     <div class="wrap">
-        <div id="youtube-video-player">
-
+        <div id="player-wrap">
         </div>
         <p>
             <span>test case url :: </span>
@@ -32,8 +31,8 @@
         </p>
         <div class="form-wrap-video-information">
             <form class="form-video-information">
-                <input type="text">
-                <input type="submit" value="제출">
+                <input name="video-id" type="text">
+                <input name="" type="submit" value="제출">
             </form>
         </div>
     </div>
@@ -42,6 +41,14 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
     let videoPlayer;
+
+    document.querySelector(".form-wrap-video-information").addEventListener("submit", (e) => {
+        e.preventDefault();
+        let url = new URL(e.target["video-id"].value);
+        let videoId = url.search.split("?")[1].split("&")[0].split("=")[1];
+
+        LoadNewVideo(videoId);
+    })
 
     function OnYouTubeIframeAPIReady() {
         console.log("Youtube API got ready");
@@ -54,7 +61,15 @@
     // https://www.youtube.com/watch?v=3GWscde8rM8&list=PLd6UgfNCWmp8bnixMcfgv_wcSMN_niBqx
     // 3GWscde8rM8
     function LoadNewVideo(_videoId) {
-        videoPlayer = new YT.Player('player', {
+        const CHILD_ID = "youtube-video-player";
+        if(document.querySelector(`#${CHILD_ID}`)) {
+            document.querySelector("#player-wrap").removeChild(document.querySelector(`#${CHILD_ID}`));
+        }
+
+        let child = document.createElement("div");
+        child.id = CHILD_ID;
+        document.querySelector("#player-wrap").appendChild(child);
+        videoPlayer = new YT.Player(CHILD_ID, {
             videoId: _videoId,
             events: {
                 // "onReady": onPlayerReady,
