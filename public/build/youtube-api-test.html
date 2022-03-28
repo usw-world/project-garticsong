@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page for Youtube API Iframe</title>
+
+    <style>
+        .wrap {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="wrap">
+        <div id="youtube-video-player">
+
+        </div>
+        <p>
+            <span>test case url :: </span>
+            <br>https://www.youtube.com/watch?v=pKv_wua6kFE
+            <br><br>
+            <span>list test case url ::</span>
+            <br>https://www.youtube.com/watch?v=3GWscde8rM8&list=PLd6UgfNCWmp8bnixMcfgv_wcSMN_niBqx
+        </p>
+        <div class="form-wrap-video-information">
+            <form class="form-video-information">
+                <input type="text">
+                <input type="submit" value="제출">
+            </form>
+        </div>
+    </div>
+</body>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+    let videoPlayer;
+
+    function OnYouTubeIframeAPIReady() {
+        console.log("Youtube API got ready");
+    }
+    // test-case 
+    // https://www.youtube.com/watch?v=pKv_wua6kFE
+    // pKv_wua6kFE
+
+    // list test-case
+    // https://www.youtube.com/watch?v=3GWscde8rM8&list=PLd6UgfNCWmp8bnixMcfgv_wcSMN_niBqx
+    // 3GWscde8rM8
+    function LoadNewVideo(_videoId) {
+        videoPlayer = new YT.Player('player', {
+            videoId: _videoId,
+            events: {
+                // "onReady": onPlayerReady,
+                "onStatChange": OnStatChange,
+            }
+        })
+    }
+
+    function OnStatChange() {
+        event.target.playVideo();
+    }
+</script>
+</html>
