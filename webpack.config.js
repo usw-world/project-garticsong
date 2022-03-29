@@ -4,10 +4,10 @@ const path = require('path');
 const mode = process.env.NODE_ENV || 'development';
 const prod = mode === 'production';
 
+console.log("mode is (usoock) :: ", mode);
+
 module.exports = {
-	entry: {
-		'build/bundle': ['./src/main.js']
-	},
+	entry: prod ? { 'build/bundle': ['./src/main.js'] } : { "static/bundle": ["./src/main.js"] },
 	resolve: {
 		alias: {
 			svelte: path.dirname(require.resolve('svelte/package.json'))
@@ -62,12 +62,14 @@ module.exports = {
 	devServer: {
 		hot: true,
 		port: process.env.PORT || 2023,
-		static: [
-			{ directory: path.join(__dirname, "public") },
-			{ 
-				directory: path.join(__dirname, "public/build"),
-				publicPath: "/static"
-		 	}
-		]
+		// static: [
+		// 	{
+		// 		directory: path.join(__dirname, "public"),
+		// 	},
+		// 	{
+		// 		directory: path.join(__dirname, "/build"),
+		// 		publicPath: "/static/"
+		//  	}
+		// ]
 	}
 };
