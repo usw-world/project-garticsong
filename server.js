@@ -10,7 +10,10 @@ const cors = require("cors");
 const { Server } = require("socket.io");
 const io = new Server(server, {
     cors: {
-        origin: ["http://10.30.5.129:2002"],
+        origin: [
+            "http://10.30.5.129:2002",
+            "http://10.30.5.129:2023",
+        ],
     }
 });
 

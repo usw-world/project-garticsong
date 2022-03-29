@@ -62,8 +62,12 @@ module.exports = {
 	devServer: {
 		hot: true,
 		port: process.env.PORT || 2023,
-		static: {
-			directory: path.join(__dirname, "public")
-		}
+		static: [
+			{ directory: path.join(__dirname, "public") },
+			{ 
+				directory: path.join(__dirname, "public/build"),
+				publicPath: "/static"
+		 	}
+		]
 	}
 };
