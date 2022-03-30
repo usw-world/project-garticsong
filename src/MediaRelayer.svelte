@@ -2,7 +2,7 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("http://10.30.5.129:3000/");
+    const socket = io("http://192.168.219.101:2023/");
     
     const ConnectAnother = () => {
         MakeCall();

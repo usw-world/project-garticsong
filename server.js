@@ -1,4 +1,5 @@
 const path = require("path");
+const PORT_NUMBER = process.env.PORT || 2023;
 
 const express = require("express");
 const app = express();
@@ -11,8 +12,7 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     cors: {
         origin: [
-            "http://10.30.5.129:2002",
-            "http://10.30.5.129:2023",
+            "http://192.168.219.101:" + PORT_NUMBER,
         ],
     }
 });
@@ -31,8 +31,6 @@ io.on("connection", socket => {
     })
 });
 
-io.listen(3000);
-
 app.use(cors());
 app.use(express.json());
 
@@ -42,6 +40,8 @@ app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"))
 });
 
-server.listen(2002, ()=>{
-    console.log("Server is running on port : 2002");
+// io.listen(PORT_NUMBER);
+
+server.listen(PORT_NUMBER, ()=>{
+    console.log("Server is running on port : ", PORT_NUMBER);
 })
