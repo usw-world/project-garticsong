@@ -2,7 +2,7 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("http://https://garticsong.herokuapp.com/");
+    const socket = io("https://garticsong.herokuapp.com/");
     
     const ConnectAnother = () => {
         MakeCall();
