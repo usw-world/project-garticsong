@@ -2,7 +2,8 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("https://garticsong.herokuapp.com/");
+    // const socket = io("https://garticsong.herokuapp.com/");
+    const socket = io("http://10.30.5.129:2023");
     
     const ConnectAnother = () => {
         MakeCall();
@@ -13,6 +14,7 @@
         },
     ]};
     const peerConnection = new RTCPeerConnection();
+    let localStream;
 
     peerConnection.addEventListener("icecandidate", event => {
         console.log("Ice event", event);
@@ -28,7 +30,6 @@
     console.log(peerConnection.getConfiguration(configuration));
     // peerConnection.setConfiguration(configuration);
     
-
     const MakeCall = async () => {
         socket.on("iceCandidate", async payload => {
             try {
@@ -38,12 +39,9 @@
                 console.error('Error adding received ice candidate', e);
             }
         })
-        // console.log(peerConnection.getConfiguration(configuration));
-        // peerConnection.setConfiguration(configuration);
         
         socket.on("answer", async payload => {
-            const remoteDesc = new RTCSessionDescription(payload);
-            await peerConnection.setRemoteDescription(remoteDesc);
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
             console.log("Receive answer.");
             console.log(peerConnection.getConfiguration(configuration));
         });

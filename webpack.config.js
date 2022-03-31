@@ -61,7 +61,7 @@ module.exports = {
 	devtool: 'source-map',
 	devServer: {
 		hot: true,
-		port: process.env.PORT || 2023,
+		port: process.env.PORT || 2000,
 		// static: [
 		// 	{
 		// 		directory: path.join(__dirname, "public"),

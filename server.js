@@ -10,11 +10,12 @@ const cors = require("cors");
 
 const { Server } = require("socket.io");
 const io = new Server(server, {
-    // cors: {
-    //     origin: [
-    //         "http://192.168.219.101:" + PORT_NUMBER,
-    //     ],
-    // }
+    cors: {
+        origin: [
+            "http://10.30.5.129:" + PORT_NUMBER,
+            "http://10.30.5.129:2000",
+        ],
+    }
 });
 
 io.on("connection", socket => {
