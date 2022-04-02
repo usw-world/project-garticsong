@@ -1,7 +1,7 @@
 <script>
 	import './reset.css';
     let videoPlayer;
-
+    
     function OnYouTubeIframeAPIReady() {
         console.log("Youtube API got ready");
     }
