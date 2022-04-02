@@ -7,10 +7,13 @@
     // const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         {
-            'urls':['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']
+            'urls':['stun:stun.l.google.com:19302'/* , 'stun:stun1.l.google.com:19302' */]
         },
     ]};
-    const peerConnection = new RTCPeerConnection(configuration);
+    // const peerConnection = new RTCPeerConnection(configuration);
+    let hostConnection;
+    let guestConnection;
+    // peerConnection.oniceconnectionstatechange = event => { console.log(peerConnection.iceConnectionState); };
 
     const GetUserMedia = async () => {
         try {
@@ -19,65 +22,63 @@
             const audioElmt = document.querySelector("audio#localaudio");
             audioElmt.srcObject = stream;
             stream.getTracks().forEach(track => {
-                peerConnection.addTrack(track, stream);
+                hostConnection.addTrack(track, stream);
             });
         } catch (error) {
             console.error("Error opening audio device.", error);
         }
     }
     let OnSubmitMessage = () => {
-        const channel = peerConnection.createDataChannel("usoock");
-        peerConnection.ondatachannel = (event) => {
-            console.log("your fault!");
-        };
+        const channel = hostConnection.createDataChannel("usoock");
         channel.onopen = (event) => {
             channel.send("Dragon Usoock!");
         };
-        console.log(channel);
+        console.log("channel", channel);
+        console.log("peerConnection", hostConnection);
     };
     
     const MakeCall = async () => {
-        socket.on("iceCandidate", async payload => {
-            try {
-                await peerConnection.addIceCandidate(payload);
-                console.log(peerConnection);
-            } catch (error) {
-                console.error('Error adding received ice candidate', e);
-            }
-        })
+        hostConnection = new RTCPeerConnection(configuration);
+
+        const channel = hostConnection.createDataChannel("data channel");
+        channel.onopen = (event) => {
+            channel.send("Dragon Usoock!");
+        };
+        console.log("channel", channel);
+        console.log("peerConnection", hostConnection);
+
         socket.on("answer", async payload => {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
+            // await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
+            await hostConnection.setRemoteDescription(payload);
             console.log("Receive answer.");
         });
-        const offer = await peerConnection.createOffer();
-        await peerConnection.setLocalDescription(offer);
+        const offer = await hostConnection.createOffer();
+        await hostConnection.setLocalDescription(offer);
         socket.emit("offer", {"offer": offer});
     }
 
     const MakeServe = async () => {
-        peerConnection.ondatachannel = (event) => {
+        guestConnection = new RTCPeerConnection(configuration);
+        guestConnection.ondatachannel = (event) => {
             console.log("I can Fly!");
-            let channel = event.channel;
-            channel.onopen = (event) => {
-                channel.send("Fly to the sky!");
-            };
-            channel.onmessage = (event) => {
-                console.log(event.data);
-            }
         }
-            
         socket.on("offer", async payload => {
-            peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
+            guestConnection.setRemoteDescription(payload);
+            // peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
+            const answer = await guestConnection.createAnswer();
+            await guestConnection.setLocalDescription(answer);
             console.log("I receive offer");
+
+            console.log(guestConnection);
+
             socket.emit("answer", answer);
         });
-        const audioElmt = document.querySelector("audio#localaudio");
-        peerConnection.addEventListener("track", async(event) => {
+        guestConnection.addEventListener("track", async(event) => {
+            const audioElmt = document.querySelector("audio#localaudio");
             const[ remoteStream ] = event.streams;
             audioElmt.srcObject = remoteStream;
         })
+
         console.log("Get ready to serve");
     };
     /* << Socket io test area */
@@ -93,7 +94,7 @@
     <div class="serveman">
         <button class="do-serve" on:click="{MakeServe}">SERVE</button>
     </div>
-    <button class="do-finddevice" on:click="{GetUserMedia}">CONNECT</button><br>
+    <button class="do-finddevice" on:click="{GetUserMedia}">MEDIA</button><br>
     <audio id="localaudio" autoplay playsinline controls="false" muted></audio><br>
     <form class="messagebox-wrap" on:submit|preventDefault="{OnSubmitMessage}">
         <textarea name="message" id="message" cols="30" rows="5"></textarea><br>
