@@ -6,9 +6,9 @@
     // const socket = io("http://10.30.5.129:2023");
     // const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
-        {
-            'urls':['stun:stun.l.google.com:19302'/* , 'stun:stun1.l.google.com:19302' */]
-        },
+        // {
+        //     'urls':['stun:stun.l.google.com:19302' , 'stun:stun1.l.google.com:19302']
+        // },
     ]};
     // const peerConnection = new RTCPeerConnection(configuration);
     let isHosting = false;

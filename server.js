@@ -14,8 +14,8 @@ const io = new Server(server, {
         origin: [
             // "http://10.30.5.129:" + PORT_NUMBER,
             // "http://10.30.5.129:2000",
-            "http://192.168.219.101:2000",
-            "http://localhost:2000"
+            // "http://192.168.219.101:2000",
+            // "http://localhost:2000"
         ],
     }
 });
