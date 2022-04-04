@@ -2,9 +2,9 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("https://garticsong.herokuapp.com/");
+    // const socket = io("https://garticsong.herokuapp.com/");
     // const socket = io("http://10.30.5.129:2023");
-    // const socket = io("http://192.168.219.101:2023");
+    const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         // {
         //     'urls':['stun:stun.l.google.com:19302' , 'stun:stun1.l.google.com:19302']
@@ -93,10 +93,10 @@
             HandleNewCandidate(guestConnection, e);
         })
         socket.on("offer", async payload => {
+            console.log("I receive offer");
             guestConnection.setRemoteDescription(payload);
             const answer = await guestConnection.createAnswer();
             await guestConnection.setLocalDescription(answer);
-            console.log("I receive offer");
 
             socket.emit("answer", answer);
             socket.off("offer");
