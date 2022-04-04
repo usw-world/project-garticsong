@@ -102,12 +102,14 @@
         });
         guestConnection.addEventListener("track", async(event) => {
             const audioElmt = document.querySelector("audio#localaudio");
+            console.log("Track Event On");
             // const[ remoteStream ] = event.streams;
             // audioElmt.srcObject = remoteStream;
             audioElmt.srcObject = event.streams[0];
         });
         guestConnection.ondatachannel = (e) => {
             const dataChannel = e.channel;
+            console.log("Data Channel Event On");
             dataChannel.onmessage = (e) => {
                 console.log("Received Message");
                 document.querySelector("#message").value = e.data;
