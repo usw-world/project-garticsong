@@ -47,7 +47,7 @@
                 socket.emit("newIceCandidate", e.candidate);
             }
 
-            let channel = peerConnection.createDataChannel("audio channel");
+            let channel = await peerConnection.createDataChannel("audio channel");
             channel.onopen = (e) => {
                 console.log("Channel is Opened", e);
             };
@@ -78,7 +78,7 @@
             pc.addIceCandidate(e)
             .then(
                 () => { console.log("Success adding new ICE Candidate") },
-                (error) => { console.error(error) }
+                (error) => { /* console.error(error) */ }
             );
         }
     }

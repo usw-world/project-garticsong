@@ -57,8 +57,8 @@ module.exports = {
 			filename: '[name].css'
 		})
 	],
-	// devtool: prod ? false : 'source-map',
-	devtool: 'source-map',
+	devtool: prod ? false : 'source-map',
+	// devtool: 'source-map',
 	devServer: {
 		hot: true,
 		port: process.env.PORT || 2000,
