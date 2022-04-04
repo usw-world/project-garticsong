@@ -21,13 +21,11 @@ const io = new Server(server, {
 });
 
 io.on("connection", socket => {
-    socket.on("offer", payload => {
-        console.log("payload :: ", payload.offer);
-        io.emit("offer", payload.offer);
+    socket.on("offer", desc => {
+        io.emit("offer", desc);
     })
-    socket.on("answer", payload => {
-        console.log("payload :: ", payload);
-        socket.broadcast.emit("answer", payload);
+    socket.on("answer", desc => {
+        socket.broadcast.emit("answer", desc);
     })
     socket.on("link", () => {
         socket.broadcast.emit("link");

@@ -2,9 +2,9 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("https://garticsong.herokuapp.com/");
+    // const socket = io("https://garticsong.herokuapp.com/");
     // const socket = io("http://10.30.5.129:2023");
-    // const socket = io("http://192.168.219.101:2023");
+    const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         // {
         //     'urls':['stun:stun.l.google.com:19302' , 'stun:stun1.l.google.com:19302']
@@ -15,7 +15,7 @@
     let hostConnections = [];
     let guestConnection;
     let dataChannels = [];
-    let temp = false;;
+    let temp = false;
     // peerConnection.oniceconnectionstatechange = event => { console.log(peerConnection.iceConnectionState); };
 
     const GetUserMedia = async (stream, peerConnection) => {
@@ -56,7 +56,7 @@
                 console.log("Channel is Closed", e);
             };
             dataChannels.push(channel);
-
+ 
             socket.on("answer", async desc => {
                 peerConnection.setRemoteDescription(desc);
                 console.log("Receive answer.");
@@ -64,7 +64,7 @@
             })
             const offer = await peerConnection.createOffer({ offerToReceiveAudio: 1, offerToReceiveVideo: 0 });
             await peerConnection.setLocalDescription(offer);
-            socket.emit("offer", {"offer": offer});
+            socket.emit("offer", offer);
         })
         isHosting = true;
 
@@ -75,11 +75,14 @@
         })
     }
     const HandleNewCandidate = (pc, e) => {
+        
+        // setTimeout(async () => {
         pc.addIceCandidate(e)
-        .then(
-            () => { temp=true; console.log("Success adding new ICE Candidate"); },
-            (error) => { console.error(error); }
-        );
+            .then(
+                () => { console.log("Success adding new ICE Candidate"); },
+                (error) => { console.error(error); }
+            );
+        // }, 3000)
     }
 
     const Link = async () => {
@@ -90,15 +93,16 @@
         socket.on("newIceCandidate", e => {
             HandleNewCandidate(guestConnection, e);
         })
-        socket.on("offer", async payload => {
+        socket.on("offer", async desc => {
             console.log("I receive offer");
-            guestConnection.setRemoteDescription(payload);
-            if(!temp) return;
-            const answer = await guestConnection.createAnswer();
-            await guestConnection.setLocalDescription(answer);
-
-            socket.emit("answer", answer);
-            socket.off("offer");
+            guestConnection.setRemoteDescription(desc);
+            setTimeout(async () => {
+                const answer = await guestConnection.createAnswer();
+                await guestConnection.setLocalDescription(answer);
+                
+                socket.emit("answer", answer);
+                socket.off("offer");
+            }, 3000)
         });
         guestConnection.addEventListener("track", async(event) => {
             const audioElmt = document.querySelector("audio#localaudio");
