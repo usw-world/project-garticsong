@@ -2,20 +2,26 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("https://garticsong.herokuapp.com/");
+    // const socket = io("https://garticsong.herokuapp.com/");
     // const socket = io("http://10.30.5.129:2023");
-    // const socket = io("http://192.168.219.101:2023");
+    const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         {
             'urls':['stun:stun.l.google.com:19302'/* , 'stun:stun1.l.google.com:19302' */]
         },
     ]};
     // const peerConnection = new RTCPeerConnection(configuration);
+    let hostConnections = [];
     let hostConnection;
     let guestConnection;
+    let dataChannel;
     // peerConnection.oniceconnectionstatechange = event => { console.log(peerConnection.iceConnectionState); };
 
     const GetUserMedia = async () => {
+        // if(hostConnections.length > 0) {
+        hostConnection = hostConnection || new RTCPeerConnection(configuration);
+            // hostConnections.push(new RTCPeerConnection(configuration));
+        // }
         try {
             const devices = await navigator.mediaDevices.getUserMedia({ "video": false, "audio": true });
             const stream = devices;
@@ -29,26 +35,34 @@
         }
     }
     let OnSubmitMessage = () => {
-        const channel = hostConnection.createDataChannel("usoock");
-        channel.onopen = (event) => {
-            channel.send("Dragon Usoock!");
-        };
-        console.log("channel", channel);
-        console.log("peerConnection", hostConnection);
+        dataChannel.send("usoock");
     };
     
     const MakeCall = async () => {
-        hostConnection = new RTCPeerConnection(configuration);
+        hostConnection = hostConnection || new RTCPeerConnection(configuration);
+        // hostConnections.push(new RTCPeerConnection(configuration));
 
-        const channel = hostConnection.createDataChannel("data channel");
-        channel.onopen = (event) => {
-            channel.send("Dragon Usoock!");
+        socket.on("newIceCandidate", (candidate) => {
+            if(candidate) {
+                hostConnection.addIceCandidate(candidate)
+                .then(
+                    () => { console.log("Success adding new ICE Candidate") },
+                    (error) => { console.error(error) }
+                );
+            }
+        })
+        hostConnection.onicecandidate = e => {
+            socket.emit("newIceCandidate", e.candidate);
+        }
+
+        dataChannel = hostConnection.createDataChannel("data channel");
+        dataChannel.onopen = (e) => {
+            console.log("Channel is Opened");
         };
-        console.log("channel", channel);
+        console.log("channel", dataChannel);
         console.log("peerConnection", hostConnection);
 
         socket.on("answer", async payload => {
-            // await peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
             await hostConnection.setRemoteDescription(payload);
             console.log("Receive answer.");
         });
@@ -59,12 +73,20 @@
 
     const MakeServe = async () => {
         guestConnection = new RTCPeerConnection(configuration);
-        guestConnection.ondatachannel = (event) => {
-            console.log("I can Fly!");
+        guestConnection.onicecandidate = (e) => {
+            socket.emit("newIceCandidate", e.candidate);
         }
+        socket.on("newIceCandidate", candidate => {
+            if(candidate) {
+                guestConnection.addIceCandidate(candidate)
+                .then(
+                    () => { console.log("Success adding new ICE Candidate") },
+                    (error) => { console.error(error) }
+                );
+            }
+        })
         socket.on("offer", async payload => {
             guestConnection.setRemoteDescription(payload);
-            // peerConnection.setRemoteDescription(new RTCSessionDescription(payload));
             const answer = await guestConnection.createAnswer();
             await guestConnection.setLocalDescription(answer);
             console.log("I receive offer");
@@ -77,7 +99,14 @@
             const audioElmt = document.querySelector("audio#localaudio");
             const[ remoteStream ] = event.streams;
             audioElmt.srcObject = remoteStream;
-        })
+        });
+        guestConnection.ondatachannel = (e) => {
+            dataChannel = e.channel;
+            dataChannel.onmessage = (e) => {
+                console.log("Received Message");
+                document.querySelector("#message").value = e.data;
+            }
+        };
 
         console.log("Get ready to serve");
     };

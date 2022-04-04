@@ -29,8 +29,9 @@ io.on("connection", socket => {
         console.log("payload :: ", payload);
         socket.broadcast.emit("answer", payload);
     })
-    socket.on("newIcecandidate", payload => {
-        io.emit("iceCandidate", payload);
+    socket.on("newIceCandidate", candidate => {
+        if(candidate !== null)
+            io.emit("newIceCandidate", candidate);
     })
 });
 
