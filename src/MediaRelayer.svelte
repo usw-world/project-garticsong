@@ -7,7 +7,7 @@
     // const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         {
-            'urls':['stun:stun.l.google.com:19302' , 'stun:stun1.l.google.com:19302']
+            'urls':['stun:stun.l.google.com:19302' , 'stun:stun1.l.google.com:19302', "turn:turn01.hubl.in?transport=udp", "turn:turn02.hubl.in?transport=tcp"]
         },
     ]};
     // const peerConnection = new RTCPeerConnection(configuration);
