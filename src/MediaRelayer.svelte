@@ -15,7 +15,6 @@
     let hostConnections = [];
     let guestConnection;
     let dataChannels = [];
-    let temp = false;
     // peerConnection.oniceconnectionstatechange = event => { console.log(peerConnection.iceConnectionState); };
 
     const GetUserMedia = async (stream, peerConnection) => {
@@ -75,14 +74,11 @@
         })
     }
     const HandleNewCandidate = (pc, e) => {
-        
-        // setTimeout(async () => {
         pc.addIceCandidate(e)
-            .then(
-                () => { console.log("Success adding new ICE Candidate"); },
-                (error) => { console.error(error); }
-            );
-        // }, 3000)
+        .then(
+            () => { console.log("Success adding new ICE Candidate"); },
+            (error) => { console.error(error); }
+        );
     }
 
     const Link = async () => {
@@ -96,13 +92,11 @@
         socket.on("offer", async desc => {
             console.log("I receive offer");
             guestConnection.setRemoteDescription(desc);
-            setTimeout(async () => {
-                const answer = await guestConnection.createAnswer();
-                await guestConnection.setLocalDescription(answer);
-                
-                socket.emit("answer", answer);
-                socket.off("offer");
-            }, 3000)
+            const answer = await guestConnection.createAnswer();
+            await guestConnection.setLocalDescription(answer);
+            
+            socket.emit("answer", answer);
+            socket.off("offer");
         });
         guestConnection.addEventListener("track", async(event) => {
             const audioElmt = document.querySelector("audio#localaudio");
