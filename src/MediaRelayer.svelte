@@ -15,6 +15,7 @@
     let hostConnections = [];
     let guestConnection;
     let dataChannels = [];
+    let temp = false;;
     // peerConnection.oniceconnectionstatechange = event => { console.log(peerConnection.iceConnectionState); };
 
     const GetUserMedia = async (stream, peerConnection) => {
@@ -30,8 +31,7 @@
         console.log(hostConnections);
         dataChannels.forEach(channel => {
             channel.send("usoock");
-        })
-        console.log(hostConnections);
+        });
     };
     
     const MakeHost = async () => {
@@ -75,13 +75,11 @@
         })
     }
     const HandleNewCandidate = (pc, e) => {
-        if(e) {
-            pc.addIceCandidate(e)
-            .then(
-                () => { console.log("Success adding new ICE Candidate") },
-                (error) => { console.error(error) }
-            );
-        }
+        pc.addIceCandidate(e)
+        .then(
+            () => { temp=true; console.log("Success adding new ICE Candidate"); },
+            (error) => { console.error(error); }
+        );
     }
 
     const Link = async () => {
@@ -95,6 +93,7 @@
         socket.on("offer", async payload => {
             console.log("I receive offer");
             guestConnection.setRemoteDescription(payload);
+            if(!temp) return;
             const answer = await guestConnection.createAnswer();
             await guestConnection.setLocalDescription(answer);
 

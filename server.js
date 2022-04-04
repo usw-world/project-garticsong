@@ -33,7 +33,6 @@ io.on("connection", socket => {
         socket.broadcast.emit("link");
     });
     socket.on("newIceCandidate", candidate => {
-        if(candidate !== null)
         socket.broadcast.emit("newIceCandidate", candidate);
     })
 });
