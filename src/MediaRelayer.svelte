@@ -2,8 +2,8 @@
     /* Socket io test area >> */
     import { io } from 'socket.io-client';
 
-    const socket = io("https://garticsong.herokuapp.com/");
-    // const socket = io("http://10.30.5.129:2023");
+    // const socket = io("https://garticsong.herokuapp.com/");
+    const socket = io("http://10.30.5.129:2023");
     // const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         {
@@ -28,12 +28,10 @@
             credential: 'muazkh',
         },
     ]};
-    // const peerConnection = new RTCPeerConnection(configuration);
     let isHosting = false;
     let hostConnections = [];
     let guestConnection;
     let dataChannels = [];
-    // peerConnection.oniceconnectionstatechange = event => { console.log(peerConnection.iceConnectionState); };
 
     const GetUserMedia = async (stream, peerConnection) => {
         try {
@@ -52,7 +50,9 @@
     };
     
     const MakeHost = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ "video": false, "audio": true });
+        // const stream = await navigator.mediaDevices.getUserMedia({ "video": false, "audio": true });
+        const stream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true });
+        console.log("stream", stream.getAudioTracks());
         const audioElmt = document.querySelector("audio#localaudio");
         audioElmt.srcObject = stream;
 
