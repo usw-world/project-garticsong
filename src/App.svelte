@@ -65,6 +65,9 @@
 		<div class="linked-wrap">
             <Relayer></Relayer>
 		</div>
+        <div class="box">
+            Lorem, ipsum dolor.
+        </div>
     </div>
 </main>
 
