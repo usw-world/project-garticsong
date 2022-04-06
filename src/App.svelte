@@ -1,6 +1,6 @@
 <script>
 	import './reset.css';
-    let videoPlayer;
+    let videoPlayerElmt;
     
     function OnYouTubeIframeAPIReady() {
         console.log("Youtube API got ready");
@@ -21,7 +21,7 @@
         let child = document.createElement("div");
         child.id = CHILD_ID;
         document.querySelector("#player-wrap").appendChild(child);
-        videoPlayer = new YT.Player(CHILD_ID, {
+        videoPlayerElmt = new YT.Player(CHILD_ID, {
             videoId: _videoId,
 			width: 0,
 			height: 0,
