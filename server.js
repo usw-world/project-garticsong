@@ -22,6 +22,7 @@ const io = new Server(server, {
 
 io.on("connection", socket => {
     socket.on("offer", desc => {
+        console.log(desc);
         io.emit("offer", desc);
     })
     socket.on("answer", desc => {
