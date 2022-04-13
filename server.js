@@ -21,18 +21,27 @@ const io = new Server(server, {
 });
 
 io.on("connection", socket => {
-    socket.on("offer", desc => {
-        console.log(desc);
-        io.emit("offer", desc);
+    socket.on("join-room", () => {
+        const userinfo = {
+            sender: socket.id,
+        }
+        socket.broadcast.emit("join-someone", userinfo);
     })
-    socket.on("answer", desc => {
+    socket.on("offer", (payload) => {
+        payload.reciever = socket.id;
+        // console.log(payload);
+        socket.broadcast.to(payload.sender).emit("offer", payload);
+    })
+    socket.on("answer", (desc) => {
         socket.broadcast.emit("answer", desc);
     })
-    socket.on("link", () => {
-        socket.broadcast.emit("link");
-    });
     socket.on("newIceCandidate", candidate => {
-        socket.broadcast.emit("newIceCandidate", candidate);
+        const payload = {
+            candidate: candidate,
+            sender: socket.id
+        }
+        console.log(payload);
+        socket.broadcast.emit("newIceCandidate", payload);
     })
 });
 
