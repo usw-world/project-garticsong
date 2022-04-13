@@ -14,24 +14,32 @@ const io = new Server(server, {
         origin: [
             // "http://10.30.5.129:" + PORT_NUMBER,
             "http://10.30.5.129:2000",
-            // "http://192.168.219.101:2000",
+            "http://192.168.219.101:2000",
             "http://localhost:2000",
         ],
     }
 });
 
 io.on("connection", socket => {
-    socket.on("offer", desc => {
-        io.emit("offer", desc);
+    socket.on("join-room", () => {
+        const userinfo = {
+            guestSocketId: socket.id,
+        }
+        socket.broadcast.emit("join-someone", userinfo);
     })
-    socket.on("answer", desc => {
-        socket.broadcast.emit("answer", desc);
+    socket.on("offer", (payload) => {
+        payload.reciever = socket.id;
+        socket.broadcast.to(payload.guestSocketId).emit("offer", payload);
     })
-    socket.on("link", () => {
-        socket.broadcast.emit("link");
-    });
+    socket.on("answer", (payload) => {
+        socket.broadcast.to(payload.reciever).emit("answer", payload.description);
+    })
     socket.on("newIceCandidate", candidate => {
-        socket.broadcast.emit("newIceCandidate", candidate);
+        const payload = {
+            candidate: candidate,
+            guestSocketId: socket.id
+        }
+        socket.broadcast.emit("newIceCandidate", payload);
     })
 });
 
@@ -43,8 +51,6 @@ app.use('/static', express.static(path.join(__dirname, "public/build")));
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"))
 });
-
-// io.listen(PORT_NUMBER);
 
 server.listen(PORT_NUMBER, ()=>{
     console.log("Server is running on port : ", PORT_NUMBER);

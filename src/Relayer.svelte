@@ -31,64 +31,61 @@
     let peerConnections = [];
     let signalChannels = [];
 
-    async function OnSubmitSignal() {
-        socket.on("link", async () => {
+    async function Listen() {
+        socket.on("join-someone", async (userinfo) => {
             const pc = new RTCPeerConnection(configuration);
             peerConnections.push(pc);
-            pc.onicecandidate = (e) => {
-                socket.emit("newIceCandidate", e.candidate);
-            }
+            pc.remoteSocketId = userinfo.guestSocketId;
+            pc.ondatachannel = OnMessage;
+            pc.onicecandidate = OnIceCandidate;
+            socket.on("newIceCandidate", (payload) => {
+                HandleNewCandidate(pc, payload);
+            });
 
-            let channel = await pc.createDataChannel("signal");
-            channel.onopen = (e) => {
-                console.log("Channel is Opened", e);
-            }
-            channel.onclose = (e) => {
-                console.log("Channel is Closed", e);
-            }
-            signalChannels.push(channel)
+            let channel = await pc.createDataChannel('signal');
+            channel.onopen = (e) => { console.log("Channel is Opened", e); }
+            channel.onclose = (e) => { console.log("Channel is Closed", e); }
+            signalChannels.push(channel);
 
             socket.on("answer", async (desc) => {
                 pc.setRemoteDescription(desc);
-                console.log("Receive Answer");
                 socket.off("answer");
-            })
+            });
 
             const offer = await pc.createOffer();
-            await pc.setLocalDescription(offer);
-            socket.emit("offer", offer)
-
-            socket.on("newIceCandidate", e => {
-                HandleNewCandidate(pc, e);
-            });
-        });
-    }
-    async function JoinRoom() {
-        const pc = new RTCPeerConnection(configuration);
-        pc.onicecandidate = (e) => {
-            socket.emit("newIceCandidate", e.candidate);
-        }
-        socket.on("offer", async (desc) => {
-            console.log("I receive offer");
-            pc.setRemoteDescription(desc);
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-
-            socket.emit("answer", answer);
-            socket.off("offer");
-        })
-        pc.ondatachannel = (e) => {
-            const channel = e.channel;
-            console.log("Data channel event on");
-            channel.onmessage = (e) => {
-                console.log("Received Message.", e.data);
+            pc.setLocalDescription(offer);
+            const payload = {
+                offer : offer,
+                guestSocketId: userinfo.guestSocketId
             }
-        }
-        socket.emit("link");
-        socket.on("newIceCandidate", e => {
-            HandleNewCandidate(pc, e);
-        });
-    };
+            socket.emit("offer", payload);
+        })
+        socket.on("offer", async (payload) => {
+            const pc = new RTCPeerConnection(configuration);
+            peerConnections.push(pc);
+            pc.remoteSocketId = payload.reciever;
+            pc.ondatachannel = OnMessage;
+            pc.onicecandidate = OnIceCandidate;
+            socket.on("newIceCandidate", (payload) => {
+                HandleNewCandidate(pc, payload);
+            });
+            pc.setRemoteDescription(payload.offer);
+
+            let channel = await pc.createDataChannel('signal');
+            channel.onopen = (e) => { console.log("Channel is Opened", e); }
+            channel.onclose = (e) => { console.log("Channel is Closed", e); }
+            signalChannels.push(channel);
+
+            const answer = await pc.createAnswer();
+            pc.setLocalDescription(answer);
+            const answerInfo = {
+                description: answer,
+                reciever: payload.reciever
+            }
+            socket.emit("answer", answerInfo);
+        })
+        socket.emit("join-room");
+    }
 
     function SendMessage(e) {
         signalChannels.forEach(channel => {
@@ -96,11 +93,24 @@
         })
     }
 
-    function HandleNewCandidate(pc, e) {
-        pc.addIceCandidate(e)
-        .then(
-            () => {},
-            (error) => { console.error(error); });
+    function HandleNewCandidate(pc, payload) {
+        if(pc.remoteSocketId === payload.guestSocketId)
+            pc.addIceCandidate(payload.candidate)
+            .then(
+                () => { /* console.log("Never mind I'll find someone like you."); */ },
+                (error) => { console.error(error); }
+            );
+    }
+
+    function OnMessage(e) {
+        const channel = e.channel;
+        channel.onmessage = (e) => {
+            console.log("Received Message.", e.data);
+        }
+    }
+
+    function OnIceCandidate(e) {
+        if(e.candidate) socket.emit("newIceCandidate", e.candidate);
     }
 </script>
 
@@ -108,8 +118,8 @@
     <input type="checkbox" name="is-host" id="is-host" on:change="{(e) => { isHost = e.target.checked }}">
     <label for="is-host">I am a host</label>
     <button on:click="{() => {
-        if(isHost) OnSubmitSignal();
-        else JoinRoom();
+        if(isHost) Listen();
+        else Listen();
     }}">{#if isHost}HOST{:else}LINK{/if}</button>
     <div class="result-box">
         <span class="result-text">
@@ -129,7 +139,6 @@
     .result-box {
         min-width: 600px;
         width: 100%;
-        height: 480px;
         border: 2px solid #fff;
         background-color: rgba(255, 255, 255, .23);
     }
