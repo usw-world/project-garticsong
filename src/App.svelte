@@ -1,6 +1,5 @@
+<!-- 
 <script>
-	import './reset.css';
-    import { onMount } from 'svelte';
     let videoPlayerElmt;
     
     function OnYouTubeIframeAPIReady() {
@@ -46,6 +45,8 @@
     // import Relayer from './MediaRelayer.svelte';
     import Relayer from './Relayer.svelte';
 </script>
+ -->
+ <!-- 
 <main>
     <div class="wrap">
         <div id="player-wrap">
@@ -68,7 +69,8 @@
 		</div>
     </div>
 </main>
-
+ -->
+ <!-- 
 <style>
 	.wrap {
 		width: 100vw;
@@ -79,3 +81,14 @@
 		align-items: center;
 	}
 </style>
+ -->
+
+<script>
+    import Lobby from './Lobby.svelte';
+</script>
+
+<main>
+    <Lobby></Lobby>
+</main>
+
+<style></style>

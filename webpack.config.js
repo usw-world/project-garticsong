@@ -48,6 +48,21 @@ module.exports = {
 				resolve: {
 					fullySpecified: false
 				}
+			},
+			// {
+			// 	test: /\.(png|woff|woff2|eot|ttf|svg)$/, 
+			// 	use: {
+			// 		loader: 'url-loader?limit=100000'
+			// 	}
+			// },
+			{
+				test: /\.(png|woff|woff2|eot|ttf|svg)$/, 
+				use: {
+					loader: "file-loader",
+					// options: {
+					// 	publicPath: path.join(__dirname, "public")
+					// }
+				},
 			}
 		]
 	},
@@ -69,7 +84,7 @@ module.exports = {
 		// 	{
 		// 		directory: path.join(__dirname, "/build"),
 		// 		publicPath: "/static/"
-		//  	}
+		//  }
 		// ]
 	}
 };

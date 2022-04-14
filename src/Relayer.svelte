@@ -1,8 +1,8 @@
 <script>
     import { io }from 'socket.io-client'
     // const socket = io("https://garticsong.herokuapp.com/");
-    // const socket = io("http://10.30.5.129:2023");
-    const socket = io("http://192.168.219.101:2023");
+    const socket = io("http://localhost:2023");
+    // const socket = io("http://192.168.219.101:2023");
     const configuration = {'iceServers': [
         {
             'urls':[
