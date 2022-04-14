@@ -7,7 +7,8 @@ const prod = mode === 'production';
 console.log("mode is (usoock) :: ", mode);
 
 module.exports = {
-	entry: prod ? { 'build/bundle': ['./src/main.js'] } : { "static/bundle": ["./src/main.js"] },
+	// entry: prod ? { 'build/bundle': ['./src/main.js'] } : { "static/bundle": ["./src/main.js"] },
+	entry: prod ? { 'build/bundle': ['./src/main.js'] } : { "bundle": ["./src/main.js"] },
 	resolve: {
 		alias: {
 			svelte: path.dirname(require.resolve('svelte/package.json'))
