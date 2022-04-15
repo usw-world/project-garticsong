@@ -88,7 +88,21 @@
 </script>
 
 <main>
-    <Lobby></Lobby>
+    <header>
+
+    </header>
+    <div class="container">
+        <Lobby></Lobby>
+    </div>
 </main>
 
-<style></style>
+<style>
+    header {
+        height: 160px;
+    }
+    .container {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 1200px;
+    }
+</style>
