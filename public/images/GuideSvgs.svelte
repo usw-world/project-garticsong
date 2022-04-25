@@ -1,6 +1,5 @@
 <script>
     export let index;
-    console.log(index);
 </script>
 <style>
     svg {

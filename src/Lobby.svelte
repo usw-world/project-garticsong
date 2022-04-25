@@ -15,7 +15,7 @@
                 <GuideImage index={1}></GuideImage>
             </span>
             <span class="textbox">
-                방에 입장하면 함께 플레이할 친구들에게 초대링크를 공유하세요!
+                함께 플레이할 친구들에게 초대링크를 공유하세요!
             </span>
         </li>
         <li class="guide-item">

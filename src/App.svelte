@@ -85,11 +85,12 @@
 
 <script>
     import Lobby from './Lobby.svelte';
+    import Logo from './Logo.svelte';
 </script>
 
 <main>
     <header>
-
+        <Logo></Logo>
     </header>
     <div class="container">
         <Lobby></Lobby>
