@@ -85,25 +85,24 @@
 
 <script>
     import Lobby from './Lobby.svelte';
-    import Logo from './Logo.svelte';
+    import GameRoom from './GameRoom/GameRoom.svelte';
 </script>
 
 <main>
-    <header>
-        <Logo></Logo>
-    </header>
     <div class="container">
-        <Lobby></Lobby>
+        <!-- <Lobby></Lobby> -->
+        <GameRoom></GameRoom>
     </div>
 </main>
 
 <style>
-    header {
-        height: 160px;
+    main {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        align-items: center;
     }
     .container {
-        margin: 0 auto;
-        width: 100%;
-        max-width: 1200px;
+        flex-basis: 100%;
     }
 </style>

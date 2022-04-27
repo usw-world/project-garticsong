@@ -1,5 +1,4 @@
 <script>
-    let svg;
     let currentAngle;
     let at;
     function OnMouseEnter() {
@@ -28,7 +27,7 @@
     }
 </style>
 
-<svg id="logo" bind:this="{svg}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 180 180" on:mouseenter="{OnMouseEnter}" on:mouseleave="{OnMouseLeave}">
+<svg id="logo" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 180 180" on:mouseenter="{OnMouseEnter}" on:mouseleave="{OnMouseLeave}">
     <defs>
     <style>
         .e{fill:#fff;}
