@@ -1,5 +1,6 @@
 <script>
     import UserInfo from './UserInformation.svelte';
+    import Questioner from './Questioner.svelte';
 </script>
 
 <div class="room-wrap">
@@ -10,7 +11,7 @@
     </div>
     <div class="room-right">
         <div class="box-wrapper">
-            
+            <Questioner></Questioner>
         </div>
     </div>
 </div>

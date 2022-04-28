@@ -8,7 +8,7 @@
             profileImage: 1,
         },
         {
-            name: "west dragon",
+            name: "west dragon pills",
             profileImage: 4,
         },
         {
