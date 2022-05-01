@@ -33,11 +33,11 @@
         .e{fill:#fff;}
         .f{fill:#48464d;}
         .g{fill:#111;}
-        .h{fill:url(#d);}
+        .h{fill:url(#logogradient);}
         .i{fill:#161616;}
         .j{fill:#313234;}
     </style>
-        <linearGradient id="d" x1="72.53" y1="72.08" x2="107.73" y2="107.28" gradientTransform="matrix(1, 0, 0, 1, 0, 0)" gradientUnits="userSpaceOnUse">
+        <linearGradient id="logogradient" x1="72.53" y1="72.08" x2="107.73" y2="107.28" gradientTransform="matrix(1, 0, 0, 1, 0, 0)" gradientUnits="userSpaceOnUse">
         <stop offset="0" stop-color="#e61673"/>
         <stop offset="1" stop-color="#172a88"/>
     </linearGradient>
@@ -52,7 +52,7 @@
             <path d="M90.13,90.03L20.76,33.72C6.37,51.49-.54,74.11,1.19,96.61c.31,4.03,.9,8.05,1.77,12.05l87.17-18.63Z" style="fill:#48464d;"/>
             <path d="M6.72,121.3c2.06,5.4,4.66,10.68,7.85,15.76s7.1,10.1,11.26,14.42l64.29-61.46L6.72,121.3Z" style="fill:#48464d;"/>
             <path d="M124.62,89.68c0,19.05-15.44,34.49-34.49,34.49s-34.49-15.44-34.49-34.49c0-5.79,1.43-11.24,3.95-16.03,5.77-10.97,17.28-18.45,30.54-18.45,19.05,0,34.49,15.44,34.49,34.49Z" style="fill:#161616;"/>
-            <path d="M115.02,89.68c0,13.75-11.14,24.89-24.89,24.89s-24.89-11.14-24.89-24.89c0-4.18,1.03-8.11,2.85-11.57,4.17-7.92,12.47-13.32,22.04-13.32,13.75,0,24.89,11.14,24.89,24.89Z" style="fill:url(#d);"/>
+            <path d="M115.02,89.68c0,13.75-11.14,24.89-24.89,24.89s-24.89-11.14-24.89-24.89c0-4.18,1.03-8.11,2.85-11.57,4.17-7.92,12.47-13.32,22.04-13.32,13.75,0,24.89,11.14,24.89,24.89Z" style="fill:url(#logogradient);"/>
             <g id="rotatePath">
                 <animateTransform bind:this="{at}" attributeName="transform" 
                                     attributeType="XML"

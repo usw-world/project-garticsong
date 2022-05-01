@@ -44,70 +44,35 @@
     function OnSubmit(e) {
         console.dir(e.target.title.value);
     }
+    function OnClickInputArea() {
+        
+    }
 </script>
 
 <div class="question-wrap" on:submit|preventDefault="{OnSubmit}">
     <form class="question-form">
-        <input type="text" name="url" placeholder="영상 링크" autocomplete="off">
-        <input type="text" name="title" placeholder="노래 제목" disabled>
-        <textarea name="description" disabled></textarea>
-        <textarea name="hint" disabled></textarea>
+        <div class="input-area" on:click="{OnClickInputArea()}">
+            <input type="text" name="url" placeholder="" autocomplete="off">
+        </div>
+        <div class="input-area" on:click="{OnClickInputArea()}">
+            <input type="text" name="title" placeholder="" autocomplete="off" disabled>
+        </div>
+        <div class="input-area" on:click="{OnClickInputArea()}">
+            <textarea name="description" class="input-description" placeholder="" autocomplete="off" disabled></textarea>
+        </div>
+        <div class="input-area" on:click="{OnClickInputArea()}">
+            <textarea name="hint" class="input-description" autocomplete="off" disabled></textarea>
+        </div>
         <input class="button" type="submit" value="제출">
-        <button class="edit-button"><img src="../images/recycle-b.svg" alt=""></button>
+        <!-- <button class="edit-button"><img src="../images/recycle-b.svg" alt=""></button> -->
     </form>
 </div>
 
 <style>
-    img {
-        vertical-align: middle;
-    }
-    textarea:disabled,
-    input:disabled {
-        background-color: rgba(255, 255, 255, .6);
-    }
-    textarea:disabled::placeholder,
-    input:disabled::placeholder {
-        color: #777;
-    }
-    button,
-    input,
-    textarea {
-        height: 5rem;
-        padding: 0 1.5rem;
-        color: #fff;
-        font-size: 2.2rem;
-        font-weight: 900;
-        font-family: nsr;
-        border: .3rem solid #fff;
-        background-color: rgba(255, 255, 255, .25);
-        border-radius: 2.5rem;
-        box-sizing: border-box;
-        vertical-align: middle;
-        outline: none;
-    }
-    input::placeholder,
-    textarea::placeholder {
-        color: #888;
-        font-weight: 700;
-    }
-    button,
-    input.button {
-        color: #232323;
-        border: .3rem solid #232323;
-        background-color: rgba(255, 255, 255, 1);
-    }
-    button:active,
-    input.button:active{
-        background-color: rgba(211, 211, 211, 1);
-    }
-    .edit-button {
+    /* .edit-button {
         width: 6rem;
-
-    }
-    input {
-
-    }
-    textarea {
-        resize: none;
+    } */
+    .input-description {
+        height: 10rem;
     }
 </style>
