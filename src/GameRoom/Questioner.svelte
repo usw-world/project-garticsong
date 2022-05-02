@@ -51,20 +51,9 @@
 
 <div class="question-wrap" on:submit|preventDefault="{OnSubmit}">
     <form class="question-form">
-        <div class="input-area" on:click="{OnClickInputArea()}">
-            <input type="text" name="url" placeholder="" autocomplete="off">
+        <div>
+            ㅎㅇ
         </div>
-        <div class="input-area" on:click="{OnClickInputArea()}">
-            <input type="text" name="title" placeholder="" autocomplete="off" disabled>
-        </div>
-        <div class="input-area" on:click="{OnClickInputArea()}">
-            <textarea name="description" class="input-description" placeholder="" autocomplete="off" disabled></textarea>
-        </div>
-        <div class="input-area" on:click="{OnClickInputArea()}">
-            <textarea name="hint" class="input-description" autocomplete="off" disabled></textarea>
-        </div>
-        <input class="button" type="submit" value="제출">
-        <!-- <button class="edit-button"><img src="../images/recycle-b.svg" alt=""></button> -->
     </form>
 </div>
 
