@@ -45,6 +45,7 @@
     }
     .room-right {
         width: 78%;
+        height: 100%;
         background: linear-gradient(#151515, #151515),
         linear-gradient(45deg, var(--point-color-a), var(--point-color-b));
         background-origin: border-box;
