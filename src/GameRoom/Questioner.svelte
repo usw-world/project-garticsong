@@ -1,4 +1,5 @@
 <script>
+    import QuestionInputArea from './QuestionInputArea.svelte';
     let videoPlayerElmt;
     
     function OnYouTubeIframeAPIReady() {
@@ -43,17 +44,21 @@
 
     function OnSubmit(e) {
         console.dir(e.target.title.value);
+        document.querySelector(".input-title").classList.add(".input-area.disappear");
     }
     function OnClickInputArea() {
         
     }
 </script>
 
-<div class="question-wrap" on:submit|preventDefault="{OnSubmit}">
-    <form class="question-form">
-        <div>
-            ㅎㅇ
+<div class="question-wrap">
+    <form class="question-form" on:submit|preventDefault="{OnSubmit}">
+        <div class="input-wrap">
+            <QuestionInputArea state={"active"} on:click="{OnClickInputArea()}">
+            </QuestionInputArea>
         </div>
+        <input class="button" type="submit" value="제출">
+        <!-- <button class="edit-button"><img src="../images/recycle-b.svg" alt=""></button> -->
     </form>
 </div>
 
@@ -61,7 +66,24 @@
     /* .edit-button {
         width: 6rem;
     } */
-    .input-description {
-        height: 10rem;
+    .question-wrap {
+        height: 100%;
+    }
+    .question-form {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+    .input-wrap {
+        position: relative;
+        display: flex;
+        width: 100%;
+        height: 6rem;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 </style>
