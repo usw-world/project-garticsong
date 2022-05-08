@@ -1,6 +1,15 @@
 <script>
     import UserInfo from './UserInformation.svelte';
     import Questioner from './Questioner.svelte';
+    let isCleared = false;
+    let firstStep;
+
+    const OnSuccessQuestion = () => {
+        isCleared = true;
+        setTimeout(() => {
+            firstStep.$destroy();
+        }, 400);
+    }
 </script>
 
 <div class="room-wrap">
@@ -11,7 +20,7 @@
     </div>
     <div class="room-right">
         <div class="box-wrapper">
-            <Questioner></Questioner>
+            <Questioner bind:this={firstStep} OnClear={OnSuccessQuestion}></Questioner>
         </div>
     </div>
 </div>
@@ -23,7 +32,9 @@
         width: 100%;
         height: 70rem;
         margin: 0 auto;
+        padding-top: 7rem;
         gap: 1rem;
+        box-sizing: border-box;
     }
     .room-left,
     .room-right {

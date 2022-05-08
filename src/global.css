@@ -69,7 +69,6 @@ input:disabled::placeholder {
 button,
 input,
 textarea {
-	height: 5rem;
 	padding: 0 1.5rem;
 	color: #fff;
 	font-size: 2.2rem;
@@ -84,7 +83,7 @@ textarea {
 }
 input::placeholder,
 textarea::placeholder {
-	color: #888;
+	color: #7c7c7c;
 	font-weight: 700;
 }
 button,
@@ -99,4 +98,35 @@ input.button:active{
 }
 textarea {
 	resize: none;
+}
+@keyframes inputError {
+	0% {
+		transform: translateX(0px);
+	}
+	12% {
+		transform: translateX(2px);
+	}
+	25% {
+		transform: translateX(0px);
+	}
+	37% {
+		transform: translateX(-2px);
+	}
+	50% {
+		transform: translateX(0px);
+	}
+	62% {
+		transform: translateX(2px);
+	}
+	75% {
+		border-color: #cc3333;
+		transform: translateX(0px);
+	}
+	87% {
+		transform: translateX(-2px);
+	}
+	100% {
+		transform: translateX(0px);
+		border-color: #cc3333;
+	}
 }
