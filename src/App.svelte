@@ -55,8 +55,8 @@
 
 <main>
     <div class="container">
-        <Lobby></Lobby>
-        <!-- <GameRoom></GameRoom> -->
+        <!-- <Lobby></Lobby> -->
+        <GameRoom></GameRoom>
         <!-- <Main></Main> -->
     </div>
 </main>

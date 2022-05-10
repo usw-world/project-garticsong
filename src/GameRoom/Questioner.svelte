@@ -20,21 +20,27 @@
     function OnSubmit(e) {
         if(questionOrder >= descriptions.length) {
             wrapper.style.opacity = 0;
-            OnFinish();
+            OnFinish(answerObj);
             return;
         }
         let answerElmt = e.target.answer;
         let value = answerElmt.value;
         
         if(value === "") { // 공백 입력 에러
-            OnEmptyInput();
+            OnInputError();
             return;
         }
         switch(questionOrder) {
             case 0:
-                answerObj["url"] = value;
                 wrotenValues[questionOrder] = value;
-                AddWrotenList(questionOrder, "url", value);
+                let videoInfo = CheckURL(value);
+                if(videoInfo) {
+                    answerObj["videoInfo"] = videoInfo;
+                    AddWrotenList(questionOrder, "url", value);
+                } else {
+                    OnInputError();
+                    return;
+                }
                 break;
             case 1: 
                 answerObj["title"] = value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/ ]/gim, "");
@@ -54,7 +60,7 @@
                 document.querySelector("#submit-button").focus();
                 break;
         }
-        questionOrder++;
+        // questionOrder++;
         answerElmt.value = "";
         ResetInput();
     }
@@ -82,6 +88,7 @@
             })
             wrotenList.appendChild(childLi);
             RefreshWrotenHeight();
+            questionOrder++;
         } catch (error) {
             console.error(error);
             questionOrder = 0;
@@ -99,10 +106,40 @@
 
         answerInput && answerInput.focus();
     }
+    function CheckURL(urlStr) {
+        try {
+            let url = new URL(urlStr);
+            let videoId;
+            let startSeconds;
+            let videoInfo = {};
+            if(urlStr.match(/https?:\/\/(www\.)?youtube.com\/watch/g)) {
+                // https://www.youtube.com/watch?v=pKv_wua6kFE&t=48s
+                videoId = url.searchParams.get('v')
+                startSeconds = url.searchParams.get('t');
+                startSeconds = startSeconds && startSeconds.split('s')[0];
+            } else if(urlStr.match(/https?:\/\/(www\.)?youtu\.be/g)) {
+                // https://youtu.be/pKv_wua6kFE?t=50
+                videoId = url.pathname.split('/')[1];
+                startSeconds = url.searchParams.get('t');
+                startSeconds = startSeconds && startSeconds.split('s')[0];
+            } else {
+                return false;
+            }
+            if(!videoId) return false;
+            else {
+                videoInfo.videoId = videoId;
+                if(startSeconds) videoInfo.startSeconds = startSeconds;
+                return videoInfo;
+            }
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
+    }
     function RefreshWrotenHeight() {
         wrotenWrapper.style.height = wrotenList.offsetHeight + "px";
     }
-    function OnEmptyInput() {
+    function OnInputError() {
         answerInput.style.animation = "inputError 400ms ease 1 forwards";
     }
     function ResetInput() {

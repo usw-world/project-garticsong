@@ -5,10 +5,11 @@
     let isCleared = false;
     let questionElmt;
 
-    const OnFinishQuestion = () => {
+    const OnFinishQuestion = (answer) => {
         setTimeout(() => {
             questionElmt.$destroy();
             isCleared = true;
+            console.log(answer);
         }, 400);
     }
 </script>
