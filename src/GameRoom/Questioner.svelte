@@ -1,14 +1,16 @@
 <script>
     import { onMount } from "svelte";
-    export let OnClear;
+    export let OnFinish;
 
     let videoPlayerElmt;
     let questionOrder = 0;
     let wrapper;
+    let answerInput;
     let answerObj = {};
     
     onMount(() => {
         wrapper = document.querySelector(".question-wrap");
+        answerInput.focus();
     });
 
     let descriptions = ["재생할 영상의 주소(URL)를 입력해요!", "제목을 입력해요! 공백, 특수문자는 무시돼요!", "문제를 맞출 수 있게 설명을 적어요!", "오랫동안 아무도 못 맞추면 힌트를 보여줘요!"];
@@ -18,9 +20,7 @@
     function OnSubmit(e) {
         if(questionOrder >= descriptions.length) {
             wrapper.style.opacity = 0;
-            answerElmt.value = value;
-            OnClear();
-            console.log("usoock");
+            OnFinish();
             return;
         }
         let answerElmt = e.target.answer;
@@ -50,11 +50,13 @@
                 answerObj["hint"] = value;
                 wrotenValues[questionOrder] = value;
                 AddWrotenList(questionOrder, "hint", value);
+
+                document.querySelector("#submit-button").focus();
                 break;
         }
         questionOrder++;
         answerElmt.value = "";
-        answerElmt.focus();
+        ResetInput();
     }
     
     let wrotenWrapper;
@@ -76,15 +78,7 @@
 
             childLi.attributes["order"] = order;
             childLi.addEventListener("click", function(e) {
-                questionOrder = this.attributes.order;
-                let listElmt = this.parentElement;
-                let items = this.parentElement.children;
-
-                for(let i=order; items.length>=order+1; i) {
-                    listElmt.removeChild(items[i]);
-                    RefreshWrotenHeight();
-                }
-                wrotenValues[questionOrder] = null;
+                ModifyWrotenList(e, this, order);
             })
             wrotenList.appendChild(childLi);
             RefreshWrotenHeight();
@@ -93,17 +87,26 @@
             questionOrder = 0;
         }
     }
+    function ModifyWrotenList(e, li, order) {
+        questionOrder = li.attributes.order;
+        let listElmt = li.parentElement;
+        let items = li.parentElement.children;
+
+        while(items.length>=order+1) {
+            listElmt.removeChild(items[order]);
+            RefreshWrotenHeight();
+        }
+
+        answerInput && answerInput.focus();
+    }
     function RefreshWrotenHeight() {
         wrotenWrapper.style.height = wrotenList.offsetHeight + "px";
     }
     function OnEmptyInput() {
-        document.querySelector(".question-answer").style.animation = "inputError 400ms ease 1 forwards";
+        answerInput.style.animation = "inputError 400ms ease 1 forwards";
     }
-    function OnClickInput() {
-        document.querySelector(".question-answer").style.animation = "none";
-    }
-    function ModifyWrotenList() {
-
+    function ResetInput() {
+        answerInput.style.animation = "none";
     }
 </script>
 
@@ -118,11 +121,11 @@
             {#if questionOrder < descriptions.length}
                 <div class="question-request">{descriptions[questionOrder]} <br> ({questionOrder+1}/{descriptions.length})</div>
                 <input type="text" class="question-answer" name="answer" placeholder={placeholders[questionOrder]} autocomplete="off" 
-                value={wrotenValues[questionOrder] || ""} on:click={OnClickInput}>
+                value={wrotenValues[questionOrder] || ""} bind:this={answerInput} on:click={ResetInput}>
             {:else}
                 <div class="question-request">확인해봐요! 제출한 뒤에는 수정할 수 없어요!</div>
             {/if}
-            <input class="button" type="submit" value="제출">
+            <input id="submit-button" class="button" type="submit" value="제출">
         </div>
     </form>
 </div>
@@ -132,6 +135,7 @@
         width: 6rem;
     } */
     .question-wrap {
+        transition: 400ms ease opacity;
         height: 100%;
     }
     .wroten-wrap {
@@ -153,7 +157,7 @@
     .question-form {
         margin-top: 8rem;
         width: 100%;
-        height: 100%;
+        /* height: 100%; */
         display: flex;
         flex-direction: column;
         align-items: center;

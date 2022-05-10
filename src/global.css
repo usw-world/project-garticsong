@@ -130,3 +130,21 @@ textarea {
 		border-color: #cc3333;
 	}
 }
+@keyframes fadeUp {
+	0% {
+		bottom: -25%;
+		opacity: 0;
+	}
+	100% {
+		bottom: 0;
+		opacity: 1;
+	}
+}
+@keyframes spin8 {
+	0% {
+		transform: rotate(0);
+	}
+	100% {
+		transform: rotate(360deg);
+	}
+}

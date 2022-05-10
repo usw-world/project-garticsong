@@ -1,13 +1,14 @@
 <script>
     import UserInfo from './UserInformation.svelte';
     import Questioner from './Questioner.svelte';
+    import LoadingComponent from '../LoadingComponent.svelte';
     let isCleared = false;
-    let firstStep;
+    let questionElmt;
 
-    const OnSuccessQuestion = () => {
-        isCleared = true;
+    const OnFinishQuestion = () => {
         setTimeout(() => {
-            firstStep.$destroy();
+            questionElmt.$destroy();
+            isCleared = true;
         }, 400);
     }
 </script>
@@ -20,7 +21,11 @@
     </div>
     <div class="room-right">
         <div class="box-wrapper">
-            <Questioner bind:this={firstStep} OnClear={OnSuccessQuestion}></Questioner>
+            {#if !isCleared}
+                <Questioner bind:this={questionElmt} OnFinish={OnFinishQuestion}></Questioner>
+            {:else}
+                <LoadingComponent />
+            {/if}
         </div>
     </div>
 </div>
@@ -53,6 +58,7 @@
     .box-wrapper {
         width: 100%;
         height: 100%;
+        overflow: hidden;
     }
     .room-right {
         width: 78%;
