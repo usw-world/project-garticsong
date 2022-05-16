@@ -50,14 +50,14 @@
     import Relayer from './Relayer.svelte';
     import Lobby from './Lobby.svelte';
     import GameRoom from './GameRoom/GameRoom.svelte';
-    import Main from './Main.svelte';
+    import Intro from './Intro.svelte';
 </script>
 
 <main>
     <div class="container">
         <!-- <Lobby></Lobby> -->
-        <GameRoom></GameRoom>
-        <!-- <Main></Main> -->
+        <!-- <GameRoom></GameRoom> -->
+        <Intro></Intro>
     </div>
 </main>
  

@@ -108,16 +108,19 @@
     }
     function CheckURL(urlStr) {
         try {
+            if(!urlStr.match(/https?:\/\//)) {
+                urlStr = "https://" + urlStr;
+            }
             let url = new URL(urlStr);
             let videoId;
             let startSeconds;
             let videoInfo = {};
-            if(urlStr.match(/https?:\/\/(www\.)?youtube.com\/watch/g)) {
+            if(urlStr.match(/^(https?:\/\/)?(www\.)?youtube.com\/watch/g)) {
                 // https://www.youtube.com/watch?v=pKv_wua6kFE&t=48s
                 videoId = url.searchParams.get('v')
                 startSeconds = url.searchParams.get('t');
                 startSeconds = startSeconds && startSeconds.split('s')[0];
-            } else if(urlStr.match(/https?:\/\/(www\.)?youtu\.be/g)) {
+            } else if(urlStr.match(/^(https?:\/\/)?(www\.)?youtu\.be/g)) {
                 // https://youtu.be/pKv_wua6kFE?t=50
                 videoId = url.pathname.split('/')[1];
                 startSeconds = url.searchParams.get('t');
