@@ -1,7 +1,15 @@
 <script>
+    import { onMount } from "svelte";
+
     import LobbyGuide from "./LobbyGuide.svelte";
     import LobbyButtonArea from './LobbyButtonArea.svelte';
     import Logo from './Logo.svelte';
+
+    export let props;
+
+    onMount(() => {
+        console.log(props.game)
+    })
 </script>
 
 <div class="lobby-wrap">
@@ -16,7 +24,6 @@
             <Logo />
             <LobbyButtonArea></LobbyButtonArea>
         </div>
-        
     </div>
 </div>
 
