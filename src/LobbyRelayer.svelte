@@ -1,15 +1,15 @@
 <script>
     import { io } from 'socket.io-client';
     import { onMount } from 'svelte';
-    import { game } from './store';
+    import { game, socket as mainSocket } from './store';
     import ReadyButton from './ReadyButton.svelte';
     export let props;
     let thisGame;
     game.subscribe(value => { thisGame = value });
 
-    // const socket = io("https://garticsong.herokuapp.com/");
-    const socket = io("http://localhost:2023");
-    // const socket = io("http://192.168.219.101:2023");
+    let socket;
+    mainSocket.subscribe(value => { socket = value; });
+
     const configuration = {'iceServers': [
         {
             'urls':[
@@ -46,6 +46,13 @@
         } else {
             JoinRoom(param);
         }
+        socket.on("someone-enters", (user) => {
+            console.log("enter user id ", user.id);
+            props.AddUser(user.id, user.name, user.profilePicture);
+        });
+        socket.on("someone-leaves", (userId) => {
+            props.RemoveUser(userId);
+        })
     })
 
     async function JoinRoom(param) {
@@ -55,7 +62,7 @@
                     thisGame.room = payload.room;
                     props.SetInviteLink(payload.room.roomId);
                     payload.room.users.forEach(user => {
-                        props.AddUser(user.name, user.profilePicture);
+                        props.AddUser(user.id, user.name, user.profilePicture);
                     })
                 }
                 if(payload.status === "REJECT") {
@@ -126,7 +133,7 @@
         socket.on("set-room", (room) => {
             thisGame.room = room;
             room.users.forEach(user => {
-                props.AddUser(user.name, user.profilePicture);
+                props.AddUser(user.id, user.name, user.profilePicture);
             })
             props.SetInviteLink(room.roomId);
         });

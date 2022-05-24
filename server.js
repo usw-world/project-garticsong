@@ -19,8 +19,10 @@ const io = new Server(server, {
     }
 });
 
+let guestBook = {};
 let rooms = {};
 const RoomGenerator = (id, hostUser) => {
+    hostUser = {...hostUser, id};
     return {
         roomId : id,
         host : hostUser,
@@ -30,12 +32,12 @@ const RoomGenerator = (id, hostUser) => {
 
 io.on("connection", socket => {
     socket.on("create-room", (payload) => {
-        console.log(payload);
+        console.log("created room :\n ", payload);
         rooms[socket.id] = RoomGenerator(socket.id, payload.hostInfo);
         socket.join(socket.id);
         
-        console.log("io rooms : ", io.rooms);
-        console.log("server rooms : ", rooms);
+        // console.log("io rooms : ", io.rooms);
+        // console.log("server rooms : ", rooms);
 
         io.to(socket.id).emit("set-room", rooms[socket.id]);
         // const userinfo = {
@@ -57,15 +59,19 @@ io.on("connection", socket => {
         }
         socket.broadcast.emit("newIceCandidate", payload);
     })
-
     socket.on("join-room", (requestPayload) => {
         if(rooms[requestPayload.parameter]) {
-            PushUser(requestPayload.parameter, requestPayload.userinfo);
+            let enteredUser = {
+                ...requestPayload.userinfo,
+                id : socket.id,
+            }
+            PushUser(requestPayload.parameter, requestPayload.userinfo, socket.id);
             let payload = {
                 status : "SUCCESS",
                 room : rooms[requestPayload.parameter],
             };
             io.to(socket.id).emit("enter-room", payload);
+            socket.to(requestPayload.parameter).emit("someone-enters", enteredUser);
         } else { // not exist room : reject
             let payload = {
                 status : "REJECT",
@@ -73,14 +79,40 @@ io.on("connection", socket => {
             io.to(socket.id).emit("enter-room", payload);
         }
     })
-    const PushUser = (roomId, userinfo) => {
-        socket.join(roomId);
-        rooms[roomId].users.push(userinfo);
-    }
-
     socket.on("check-room", (roomId) => {
         io.to(socket.id).emit("result-check", !!rooms[roomId]);
     })
+    socket.on("disconnect", () => {
+        console.log("someone left the game");
+        RemoveUser(guestBook[socket.id], socket.id);
+        io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
+    })
+    const PushUser = (roomId, userinfo, socketId) => {
+        socket.join(roomId);
+        let user = {
+            ...userinfo,
+            id : socketId,
+        }
+        guestBook[socketId] = roomId;
+        rooms[roomId].users.push(user);
+    }
+    const RemoveUser = (targetRoomId, targetUserId) => {
+        if(targetRoomId) {
+            let nextRoom = {
+                ...rooms[targetRoomId],
+                users : rooms[targetRoomId].users.filter(user => {
+                    return user.id !== targetUserId
+                }),
+            }
+            if(nextRoom.users.length <= 0) {
+                delete rooms[targetRoomId];
+            } else {
+                rooms[targetRoomId] = nextRoom;
+            }
+        } else {
+            console.error("called from RemoveUser() : target room is not exist.");
+        }
+    }
 });
 
 app.use(cors());

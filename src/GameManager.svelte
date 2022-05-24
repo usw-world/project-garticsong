@@ -1,15 +1,13 @@
 <script>
     import { onMount } from 'svelte';
-    import { io } from "socket.io-client";
-    // const socket = io("https://garticsong.herokuapp.com/");
-    const socket = io("http://localhost:2023");
-    // const socket = io("http://192.168.219.101:2023");
 
-    import { game } from "./store";
+    import { game, socket as mainSocket } from "./store";
+    let socket;
+    mainSocket.subscribe(value => { socket = value; })
+
     let thisGame;
-    game.subscribe(value => {
-        thisGame = value;
-    });
+    game.subscribe(value => { thisGame = value; });
+    
     import Lobby from './Lobby.svelte';
     import GameRoom from './GameRoom/GameRoom.svelte';
     import Intro from './Intro.svelte';

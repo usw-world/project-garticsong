@@ -14,13 +14,18 @@
     onMount(() => {
 
     })
-    function AddUser(_name/* string */, _profileImage/* number */) {
+    function AddUser(_id/* string */, _name/* string */, _profileImage/* number */) {
         let newUser = {
+            id : _id,
             name : _name,
             profileImage : _profileImage
         }
         users = [...users, newUser];
-        console.log(users);
+    }
+    function RemoveUser(targetId/* string */) {
+        users = users.filter(user => {
+            return user.id !== targetId;
+        });
     }
     const OnCopyButton = () => {
         navigator.clipboard.writeText(inviteLink);
@@ -52,7 +57,8 @@
                 <LobbyRelayer props={{
                     ...props,
                     SetInviteLink,
-                    AddUser
+                    AddUser,
+                    RemoveUser,
                 }}></LobbyRelayer>
             </div>
         </div>
