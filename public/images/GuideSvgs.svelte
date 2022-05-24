@@ -3,7 +3,7 @@
 </script>
 <style>
     svg {
-        width: 300px;
+        width: 31rem;
     }
 </style>
 

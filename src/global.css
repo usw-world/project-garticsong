@@ -66,6 +66,8 @@ main {
 	height: 100%;
 	justify-content: center;
 	align-items: center;
+	padding-bottom: 5rem;
+	box-sizing: border-box;
 }
 img {
 	vertical-align: middle;
@@ -81,7 +83,7 @@ input:disabled::placeholder {
 button,
 input,
 textarea {
-	padding: 0 1.5rem;
+	padding: 1rem 1.5rem .8rem;
 	color: #fff;
 	font-size: 2.2rem;
 	font-weight: 900;
@@ -93,6 +95,9 @@ textarea {
 	vertical-align: middle;
 	outline: none;
 }
+button:active {
+	background-color: rgba(255, 255, 255, .5);
+}
 input::placeholder,
 textarea::placeholder {
 	color: #7c7c7c;
@@ -100,6 +105,7 @@ textarea::placeholder {
 }
 button,
 input.button {
+	padding: 1rem 1.5rem .8rem;
 	color: #232323;
 	border: .3rem solid #232323;
 	background-color: rgba(255, 255, 255, 1);

@@ -61,10 +61,7 @@
 <style>
     .guide-wrap {
         width: 100%;
-        /* background-color: rgba(255, 255, 255, .12); */
-        background-color: rgba(0, 0, 0, .75);
         overflow: hidden;
-        border-radius: 25px;
         box-sizing: border-box;
     }
     .guide-list {

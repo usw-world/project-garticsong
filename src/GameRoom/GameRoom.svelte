@@ -1,5 +1,5 @@
 <script>
-    import UserInfo from './UserInformation.svelte';
+    import UserInfo from '../UserInformation.svelte';
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
     let isCleared = false;
@@ -16,9 +16,7 @@
 
 <div class="room-wrap">
     <div class="room-left">
-        <div class="box-wrapper">
-            <UserInfo></UserInfo>
-        </div>
+        <UserInfo></UserInfo>
     </div>
     <div class="room-right">
         <div class="box-wrapper">
@@ -55,11 +53,6 @@
         background-origin: border-box;
         background-clip: content-box, border-box;
         border-radius: 0 0 0 10rem;
-    }
-    .box-wrapper {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
     }
     .room-right {
         width: 78%;

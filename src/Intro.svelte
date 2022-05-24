@@ -7,6 +7,11 @@
     onMount(() => {
         userinfomationForm.addEventListener("submit", (e) => {
             e.preventDefault();
+            if(e.target["username"].value.trim() === "") {
+                OnInputError();
+                return;
+            }
+
             props.SetUserInformation({
                 name: e.target["username"].value,
                 profilePicture: 0
@@ -14,6 +19,12 @@
             props.SetGameState(1);
         })
     });
+    const OnInputError = () => {
+        document.querySelector(".input-username").style.animation = "inputError 400ms ease 1 forwards";
+    }
+    const OnClickInput = () => {
+        document.querySelector(".input-username").style.animation = "none";
+    }
 </script>
 
 <div class="wrap">
@@ -37,7 +48,7 @@
     
                     </div>
                 </div>
-                <input type="text" name="username" placeholder="이름을 입력해주세요" class="input-username">
+                <input type="text" name="username" placeholder="이름을 입력해주세요" class="input-username" on:click="{OnClickInput}">
                 <button class="join-button">JOIN</button>
         </form>
     </div>

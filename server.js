@@ -19,12 +19,29 @@ const io = new Server(server, {
     }
 });
 
+let rooms = {};
+const RoomGenerator = (id, hostUser) => {
+    return {
+        roomId : id,
+        host : hostUser,
+        users : [hostUser]
+    }
+}
+
 io.on("connection", socket => {
-    socket.on("join-room", () => {
-        const userinfo = {
-            guestSocketId: socket.id,
-        }
-        socket.broadcast.emit("join-someone", userinfo);
+    socket.on("create-room", (payload) => {
+        console.log(payload);
+        rooms[socket.id] = RoomGenerator(socket.id, payload.hostInfo);
+        socket.join(socket.id);
+        
+        console.log("io rooms : ", io.rooms);
+        console.log("server rooms : ", rooms);
+
+        io.to(socket.id).emit("set-room", rooms[socket.id]);
+        // const userinfo = {
+        //     guestSocketId: socket.id,
+        // }
+        // socket.broadcast.emit("join-someone", userinfo);
     })
     socket.on("offer", (payload) => {
         payload.reciever = socket.id;
@@ -39,6 +56,30 @@ io.on("connection", socket => {
             guestSocketId: socket.id
         }
         socket.broadcast.emit("newIceCandidate", payload);
+    })
+
+    socket.on("join-room", (requestPayload) => {
+        if(rooms[requestPayload.parameter]) {
+            PushUser(requestPayload.parameter, requestPayload.userinfo);
+            let payload = {
+                status : "SUCCESS",
+                room : rooms[requestPayload.parameter],
+            };
+            io.to(socket.id).emit("enter-room", payload);
+        } else { // not exist room : reject
+            let payload = {
+                status : "REJECT",
+            }
+            io.to(socket.id).emit("enter-room", payload);
+        }
+    })
+    const PushUser = (roomId, userinfo) => {
+        socket.join(roomId);
+        rooms[roomId].users.push(userinfo);
+    }
+
+    socket.on("check-room", (roomId) => {
+        io.to(socket.id).emit("result-check", !!rooms[roomId]);
     })
 });
 

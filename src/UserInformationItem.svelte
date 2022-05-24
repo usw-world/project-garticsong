@@ -5,13 +5,13 @@
 
 <li class="user-item">
     <span class="image-box">
-        {#if info.profileImage==1}
+        {#if info.profileImage==0}
             <img src="../images/main-character.svg" alt="">
-        {:else if info.profileImage==2}
+        {:else if info.profileImage==1}
             <img src="../images/main-character.svg" alt="" style="transform: rotate(90deg);">
-        {:else if info.profileImage==3}
+        {:else if info.profileImage==2}
             <img src="../images/main-character.svg" alt="" style="transform: rotate(180deg);">
-        {:else if info.profileImage==4}
+        {:else if info.profileImage==3}
             <img src="../images/main-character.svg" alt="" style="transform: rotate(270deg);">
         {/if}
     </span>
