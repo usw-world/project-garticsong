@@ -2,16 +2,20 @@
     import UserInfo from '../UserInformation.svelte';
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
+    import AnswerRoom from './AnswerRoom.svelte'
     let isCleared = false;
     let questionElmt;
-
+    let answerObj;
+    
     const OnFinishQuestion = (answer) => {
+        answerObj = {...answer};
         setTimeout(() => {
             questionElmt.$destroy();
             isCleared = true;
-            console.log(answer);
         }, 400);
     }
+
+    
 </script>
 
 <div class="room-wrap">
@@ -23,7 +27,8 @@
             {#if !isCleared}
                 <Questioner bind:this={questionElmt} OnFinish={OnFinishQuestion}></Questioner>
             {:else}
-                <LoadingComponent />
+                <!-- <LoadingComponent /> -->
+                <AnswerRoom answerObj={answerObj} />
             {/if}
         </div>
     </div>
