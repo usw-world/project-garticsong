@@ -27,7 +27,7 @@
         ROOM: 2,
         RESULT: 3,
     };
-    let currentState = 0;
+    let currentState = 2;
 
     let SetGameState = (nextState) => {
         if(nextState < 0 || nextState > Object.values(gameStateList).reduce((a, b) => Math.max(a, b))) {

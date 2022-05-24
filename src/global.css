@@ -150,6 +150,11 @@ textarea {
 		border-color: #cc3333;
 	}
 }
+@keyframes inputAnswer {
+	100% {
+		border-color : #2b95ff;
+	}
+}
 @keyframes fadeUp {
 	0% {
 		bottom: -25%;
