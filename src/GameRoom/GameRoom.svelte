@@ -3,10 +3,73 @@
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
     import AnswerRoom from './AnswerRoom.svelte'
+    import { onMount } from 'svelte';
+    import { game, socket as mainSocket } from '../store';
+    // export let props;
+    let thisGame;
+    game.subscribe(value => { thisGame = value });
+
+    let socket;
+    mainSocket.subscribe(value => { socket = value; });
+
+    const iceConfiguration = {'iceServers': [
+        {
+            'urls':[
+                "stun:stun.l.google.com:19302",
+                "stun:stun1.l.google.com:19302",
+                "stun:stun2.l.google.com:19302",
+                "stun:stun3.l.google.com:19302",
+                "stun:stun4.l.google.com:19302",
+                "stun:stun.ekiga.net",
+                "stun:stun.ideasip.com",
+                "stun:stun.rixtelecom.se",
+                "stun:stun.schlund.de",
+                "stun:stun.stunprotocol.org:3478",
+                "stun:stun.voiparound.com",
+                "stun:stun.voipbuster.com",
+                "stun:stun.voipstunt.com",
+                "stun:stun.voxgratia.org",
+                'turn:numb.viagenie.ca',
+            ],
+            username: 'webrtc@live.com',
+            credential: 'muazkh',
+        },
+    ]};
+
+    const AddPeerConnection = (pc) => {
+        let nextPcs = thisGame.peerConnections;
+        nextPcs.push(pc);
+        game.update(game => {
+            return {
+                ...game,
+                peerConnections: nextPcs,
+            }
+        });
+    };
+    onMount(() => {
+        game.update(game => {
+            return {
+                ...game,
+                peerConnections : [],
+                signalChannels : [],
+            };
+        });
+        socket.on("game-start", (updatedRoom) => {
+            game.update(game => {
+                return {...game, room : updatedRoom};
+            })
+            socket.on("connect-other", (user, desc) => {
+                const pc = new RTCPeerConnection(iceConfiguration);
+                AddPeerConnection(pc);
+            })
+        });
+        socket.emit("ready-to-connect", thisGame.room.id);
+    });
+
     let isCleared = false;
     let questionElmt;
     let answerObj;
-    
+
     const OnFinishQuestion = (answer) => {
         answerObj = {...answer};
         setTimeout(() => {
@@ -14,8 +77,6 @@
             isCleared = true;
         }, 400);
     }
-
-    
 </script>
 
 <div class="room-wrap">

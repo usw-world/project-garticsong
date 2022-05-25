@@ -106,9 +106,10 @@
         background-origin: border-box;
         background-clip: content-box, border-box;
         border-radius: 0 0 0 10rem;
+        overflow: hidden;
     }
     .lobby-center {
-        width: 43%;
+        width: 48%;
         height: 100%;
         background: linear-gradient(#151515, #151515),
         linear-gradient(45deg, var(--point-color-a), var(--point-color-b));
@@ -116,10 +117,13 @@
         background-clip: content-box, border-box;
         box-sizing: border-box;
         border: 5px solid transparent;
-        border-radius: 0 0 10rem 0;
+        border-radius: 0 10rem 0 0;
         overflow: hidden;
     }
     .lobby-right {
-        width: calc(35% - 2rem);
+        width: calc(30% - 2rem);
+    }
+    .lobby-right .logo-top {
+        padding: 5rem 3.5rem 3.5rem;
     }
 </style>

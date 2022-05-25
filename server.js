@@ -61,6 +61,13 @@ io.on("connection", socket => {
     })
     socket.on("join-room", (requestPayload) => {
         if(rooms[requestPayload.parameter]) {
+            if(rooms[requestPayload.parameter].users.length >= 6) {
+                let payload = {
+                    status : "REJECT",
+                    message : "reject : the room is full"
+                }
+                io.to(socket.id).emit("enter-room", payload);
+            }
             let enteredUser = {
                 ...requestPayload.userinfo,
                 id : socket.id,
@@ -71,10 +78,11 @@ io.on("connection", socket => {
                 room : rooms[requestPayload.parameter],
             };
             io.to(socket.id).emit("enter-room", payload);
-            socket.to(requestPayload.parameter).emit("someone-enters", enteredUser);
+            socket.to(requestPayload.parameter).emit("someone-enters", rooms[requestPayload.parameter], enteredUser);
         } else { // not exist room : reject
             let payload = {
                 status : "REJECT",
+                message : "reject : not exist room"
             }
             io.to(socket.id).emit("enter-room", payload);
         }
@@ -86,6 +94,21 @@ io.on("connection", socket => {
         console.log("someone left the game");
         RemoveUser(guestBook[socket.id], socket.id);
         io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
+    })
+    let watingRooms = {};
+    socket.on("game-start", (room) => {
+        watingRooms[room.roomId] = [...room.users];
+        console.log(watingRooms);
+        // io.to(room.id).emit("game-start", room);
+    })
+    socket.on("ready-to-connect", (roomid) => {
+        let targetRoom = watingRooms[roomid];
+        if(targetRoom) {
+            targetRoom = targetRoom.filter(id => {
+                return id !== socket.id;
+            })
+            console.log("::: user loaded");
+        }
     })
     const PushUser = (roomId, userinfo, socketId) => {
         socket.join(roomId);
@@ -109,8 +132,6 @@ io.on("connection", socket => {
             } else {
                 rooms[targetRoomId] = nextRoom;
             }
-        } else {
-            console.error("called from RemoveUser() : target room is not exist.");
         }
     }
 });

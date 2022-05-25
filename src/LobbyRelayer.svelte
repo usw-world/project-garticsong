@@ -2,7 +2,7 @@
     import { io } from 'socket.io-client';
     import { onMount } from 'svelte';
     import { game, socket as mainSocket } from './store';
-    import ReadyButton from './ReadyButton.svelte';
+    import StartButton from './StartButton.svelte';
     export let props;
     let thisGame;
     game.subscribe(value => { thisGame = value });
@@ -10,7 +10,7 @@
     let socket;
     mainSocket.subscribe(value => { socket = value; });
 
-    const configuration = {'iceServers': [
+    const iceConfiguration = {'iceServers': [
         {
             'urls':[
                 "stun:stun.l.google.com:19302",
@@ -34,7 +34,6 @@
         },
     ]};
 
-    let isHost = false;
     let peerConnections = [];
     let signalChannels = [];
 
@@ -42,17 +41,29 @@
         let url = new URL(document.location.href);
         let param = url.searchParams.get("jr");
         if(!param) {// is host
+            game.update(game => {
+                return {
+                    ...game,
+                    isGuest : false,
+                };
+            });
             HostRoom();
         } else {
             JoinRoom(param);
         }
-        socket.on("someone-enters", (user) => {
+        socket.on("someone-enters", (updatedRoom, user) => {
             console.log("enter user id ", user.id);
+            game.update(game => {
+                return {
+                    ...game,
+                    room : updatedRoom,
+                }
+            })
             props.AddUser(user.id, user.name, user.profilePicture);
         });
         socket.on("someone-leaves", (userId) => {
             props.RemoveUser(userId);
-        })
+        });
     })
 
     async function JoinRoom(param) {
@@ -142,13 +153,11 @@
         };
         socket.emit("create-room", createRoomPayload);
     }
-
     function SendMessage(e) {
         signalChannels.forEach(channel => {
             channel.send(e.target.data.value);
         })
     }
-
     function HandleNewCandidate(pc, payload) {
         if(pc.remoteSocketId === payload.guestSocketId)
             pc.addIceCandidate(payload.candidate)
@@ -157,35 +166,37 @@
                 (error) => { console.error(error); }
             );
     }
-
     function OnMessage(e) {
         const channel = e.channel;
         channel.onmessage = (e) => {
             console.log("Received Message.", e.data);
         }
     }
-
     function OnIceCandidate(e) {
         if(e.candidate) socket.emit("newIceCandidate", e.candidate);
+    }
+    function OnClickStartButton() {
+        console.log(thisGame.room);
+        socket.emit("game-start", thisGame.room);
     }
 </script>
 
 <div class="button-area">
-    <input type="checkbox" name="is-host" id="is-host" on:change="{(e) => { isHost = e.target.checked }}">
-    <label for="is-host">I am a host</label>
-    <button on:click="{() => {
-        if(isHost) HostRoom();
-        else HostRoom();
-    }}">{#if isHost}HOST{:else}LINK{/if}</button>
-    <form on:submit|preventDefault={SendMessage}>
-        <input type="text" name="data">
-        <input type="submit" value="submit">
-    </form>
-    <ReadyButton></ReadyButton>
+    <button class="start-button" on:click={OnClickStartButton}>
+        {#if !thisGame.isGuest}
+            <StartButton></StartButton>
+        {/if}
+    </button>
 </div>
 
 <style>
-    label {
-        display: inline;
+    .start-button {
+        background: none;
+        border: 0;
+    }
+    .button-area {
+        margin-top: 5rem;
+        width: 100%;
+        text-align: center;
     }
 </style>
