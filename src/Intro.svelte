@@ -12,9 +12,9 @@
                 return;
             }
 
-            props.SetUserInformation({
+            props.SetPlayerInformation({
                 name: e.target["username"].value,
-                profilePicture: 0
+                profileImage: 0
             });
             props.SetGameState(1);
         })

@@ -4,26 +4,27 @@
     import LobbyGuide from "./LobbyGuide.svelte";
     import LobbyRelayer from "./LobbyRelayer.svelte";
     import UserInfo from "./UserInformation.svelte";
+    import { game } from "./store";
+    let thisGame;
+    game.subscribe(game => { thisGame = game });
 
     export let props;
     let inviteLink = "https://garticsong.herokuapp.com/?jr=";
     let inviteLinkElmt;
 
-    let users = [];
-
-    onMount(() => {
-
-    })
+    
+    onMount(() => {})
     function AddUser(_id/* string */, _name/* string */, _profileImage/* number */) {
+        console.log(thisGame.room.users);
         let newUser = {
             id : _id,
             name : _name,
             profileImage : _profileImage
         }
-        users = [...users, newUser];
+        thisGame.room.users = [...thisGame.room.users, newUser];
     }
     function RemoveUser(targetId/* string */) {
-        users = users.filter(user => {
+        thisGame.room.users = thisGame.room.users.filter(user => {
             return user.id !== targetId;
         });
     }
@@ -44,7 +45,7 @@
     </div>
     <div class="lobby-bottom">
         <div class="lobby-left">
-            <UserInfo users={users}></UserInfo>
+            <UserInfo users={thisGame.room.users}></UserInfo>
         </div>
         <div class="lobby-center">
             <LobbyGuide></LobbyGuide>

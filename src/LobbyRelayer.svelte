@@ -59,10 +59,15 @@
                     room : updatedRoom,
                 }
             })
-            props.AddUser(user.id, user.name, user.profilePicture);
         });
         socket.on("someone-leaves", (userId) => {
             props.RemoveUser(userId);
+        });
+        socket.on("game-start", (updatedRoom) => {
+            game.update(game => {
+                return {...game, room : updatedRoom};
+            });
+            props.SetGameState(props.gameStateList.ROOM);
         });
     })
 
@@ -71,10 +76,13 @@
             socket.on("enter-room", (payload) => {
                 if(payload.status === "SUCCESS") {
                     thisGame.room = payload.room;
+                    game.update(game => {
+                        return {
+                            ...game,
+                            room : payload.room
+                        };
+                    });
                     props.SetInviteLink(payload.room.roomId);
-                    payload.room.users.forEach(user => {
-                        props.AddUser(user.id, user.name, user.profilePicture);
-                    })
                 }
                 if(payload.status === "REJECT") {
                     // window.location = "https://garticsong.herokuapp.com/";
@@ -141,12 +149,14 @@
         //     }
         //     socket.emit("answer", answerInfo);
         // })
-        socket.on("set-room", (room) => {
-            thisGame.room = room;
-            room.users.forEach(user => {
-                props.AddUser(user.id, user.name, user.profilePicture);
-            })
-            props.SetInviteLink(room.roomId);
+        socket.on("set-room", (nextRoom) => {
+            game.update(game => {
+                return {
+                    ...game,
+                    room: nextRoom
+                }
+            });
+            props.SetInviteLink(thisGame.room.roomId);
         });
         let createRoomPayload = {
             hostInfo : thisGame.player

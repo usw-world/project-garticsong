@@ -44,19 +44,8 @@
     })();
 
     const COOKIE_EXPIRES_TIME = new Date(Date.now() + 900000)
-    game.update((game) => {
-        return {
-            ...game,
-            player: cookieManager.GetAllCookies().userInfo 
-                    && JSON.parse(cookieManager.GetAllCookies().userInfo) 
-                    || {
-                        name : null,
-                        profile : null
-                    }
-        }
-    })
     onMount(() => {
-        console.log(thisGame);
+        // console.log(thisGame);
     });
 
     let SetGameState = (nextState) => {
@@ -66,12 +55,12 @@
         }
         currentState = nextState;
     }
-    let SetUserInformation = (info) => {
+    let SetPlayerInformation = (info) => {
         let player = {
             name: info.name,
-            profilePicture: info.profilePicture
+            profileImage: info.profileImage
         };
-        cookieManager.SetCookie("userInfo", JSON.stringify(player))
+        // cookieManager.SetCookie("userInfo", JSON.stringify(player))
         game.update(game => {
             return {
                 ...game,
@@ -83,7 +72,7 @@
         thisGame,
         gameStateList,
         SetGameState,
-        SetUserInformation
+        SetPlayerInformation,
     }
 </script>
 

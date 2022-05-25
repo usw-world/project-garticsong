@@ -22,11 +22,14 @@ const io = new Server(server, {
 let guestBook = {};
 let rooms = {};
 const RoomGenerator = (id, hostUser) => {
-    hostUser = {...hostUser, id};
+    let host = {
+        id, 
+        ...hostUser,
+    };
     return {
         roomId : id,
-        host : hostUser,
-        users : [hostUser]
+        host,
+        users : [host],
     }
 }
 
@@ -37,8 +40,7 @@ io.on("connection", socket => {
         socket.join(socket.id);
         
         // console.log("io rooms : ", io.rooms);
-        // console.log("server rooms : ", rooms);
-
+        // console.log("server rooms : ", rooms);;
         io.to(socket.id).emit("set-room", rooms[socket.id]);
         // const userinfo = {
         //     guestSocketId: socket.id,
@@ -99,7 +101,7 @@ io.on("connection", socket => {
     socket.on("game-start", (room) => {
         watingRooms[room.roomId] = [...room.users];
         console.log(watingRooms);
-        // io.to(room.id).emit("game-start", room);
+        io.to(room.roomId).emit("game-start", room);
     })
     socket.on("ready-to-connect", (roomid) => {
         let targetRoom = watingRooms[roomid];

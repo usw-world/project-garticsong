@@ -54,15 +54,6 @@
                 signalChannels : [],
             };
         });
-        socket.on("game-start", (updatedRoom) => {
-            game.update(game => {
-                return {...game, room : updatedRoom};
-            })
-            socket.on("connect-other", (user, desc) => {
-                const pc = new RTCPeerConnection(iceConfiguration);
-                AddPeerConnection(pc);
-            })
-        });
         socket.emit("ready-to-connect", thisGame.room.id);
     });
 
@@ -81,7 +72,7 @@
 
 <div class="room-wrap">
     <div class="room-left">
-        <UserInfo></UserInfo>
+        <UserInfo users={thisGame.room.users}></UserInfo>
     </div>
     <div class="room-right">
         <div class="box-wrapper">
