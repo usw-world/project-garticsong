@@ -12,6 +12,8 @@
     let socket;
     mainSocket.subscribe(value => { socket = value; });
 
+    let isLoaded = false;
+
     const iceConfiguration = {'iceServers': [
         {
             'urls':[
@@ -76,10 +78,11 @@
     </div>
     <div class="room-right">
         <div class="box-wrapper">
-            {#if !isCleared}
+            {#if !isLoaded}
+                <LoadingComponent />
+            {:else if !isCleared}
                 <Questioner bind:this={questionElmt} OnFinish={OnFinishQuestion}></Questioner>
             {:else}
-                <!-- <LoadingComponent /> -->
                 <AnswerRoom answerObj={answerObj} />
             {/if}
         </div>

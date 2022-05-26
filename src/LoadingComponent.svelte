@@ -20,7 +20,7 @@
     }
     .loading-wrap {
         position: relative;
-        animation: fadeUp 800ms ease 1 forwards;
+        animation: fadeUpIn 800ms ease 1 forwards;
         text-align: center;
     }
     .loading-imagebox {

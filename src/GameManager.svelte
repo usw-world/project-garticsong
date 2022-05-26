@@ -7,6 +7,8 @@
 
     let thisGame;
     game.subscribe(value => { thisGame = value; });
+
+    let container;
     
     import Lobby from './Lobby.svelte';
     import GameRoom from './GameRoom/GameRoom.svelte';
@@ -48,12 +50,25 @@
         // console.log(thisGame);
     });
 
-    let SetGameState = (nextState) => {
+    let isLoading = false;
+    let SetGameState = (nextState, fadeTime, callfront, callback) => {
+        if(isLoading) return;
+        isLoading = true;
+        if(callfront) callfront();
+        if(!fadeTime) fadeTime = 500;
+
         if(nextState < 0 || nextState > Object.values(gameStateList).reduce((a, b) => Math.max(a, b))) {
             console.error("function:SetGameState received a unvaild value. \nnextState : ", nextState);
             return;
         }
-        currentState = nextState;
+        container.style.setProperty("animation", `fadeUpOut ${fadeTime}ms ease 1 forwards`);
+        console.dir(container.style.animation);
+        setTimeout(() => {
+            currentState = nextState;
+            container.style.animation = `fadeUpIn ${fadeTime}ms ease 1 forwards`;
+            if(callback) callback();
+            isLoading = false;
+        }, fadeTime);
     }
     let SetPlayerInformation = (info) => {
         let player = {
@@ -76,7 +91,7 @@
     }
 </script>
 
-<div class="container">
+<div class="container" bind:this="{container}">
     {#if currentState===gameStateList.INTRO}
     <Intro props={props}></Intro>
     {:else if currentState===gameStateList.LOBBY}
@@ -89,3 +104,6 @@
     not exixt room
     {/if}
 </div>
+
+<style>
+</style>
