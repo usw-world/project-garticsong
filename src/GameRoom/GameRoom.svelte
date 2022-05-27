@@ -56,7 +56,10 @@
                 signalChannels : [],
             };
         });
-        socket.emit("ready-to-connect", thisGame.room.id);
+        socket.on("connect-this", () => {
+
+        })
+        socket.emit("ready-to-connect", thisGame.room.roomId);
     });
 
     let isCleared = false;
@@ -77,15 +80,15 @@
         <UserInfo users={thisGame.room.users}></UserInfo>
     </div>
     <div class="room-right">
-        <div class="box-wrapper">
-            {#if !isLoaded}
-                <LoadingComponent />
-            {:else if !isCleared}
+        {#if !isLoaded}
+            <LoadingComponent />
+        {:else if !isCleared}
+            <div class="box-wrapper">
                 <Questioner bind:this={questionElmt} OnFinish={OnFinishQuestion}></Questioner>
-            {:else}
-                <AnswerRoom answerObj={answerObj} />
-            {/if}
-        </div>
+            </div>
+        {:else}
+            <AnswerRoom answerObj={answerObj} />
+        {/if}
     </div>
 </div>
 

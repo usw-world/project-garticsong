@@ -104,14 +104,25 @@ io.on("connection", socket => {
         io.to(room.roomId).emit("game-start", room);
     })
     socket.on("ready-to-connect", (roomid) => {
-        let targetRoom = watingRooms[roomid];
-        if(targetRoom) {
-            targetRoom = targetRoom.filter(id => {
-                return id !== socket.id;
+        if(watingRooms[roomid]) {
+            watingRooms[roomid] = watingRooms[roomid].filter(user => {
+                return user.id !== socket.id;
             })
-            console.log("::: user loaded");
+        }
+        if(watingRooms[roomid].length<=0) {
+            ConnectAsP2P(roomid)
         }
     })
+    const ConnectAsP2P = (roomid) => {
+        let users = rooms[roomid].users;
+        if(users.length<=1) return;
+
+        for(let i=0; i<users.length; i++) {
+            for(let j=i+1; j<user.length; j++) {
+                io.to(users[i].id).emit("connect-this")
+            }
+        }
+    }
     const PushUser = (roomId, userinfo, socketId) => {
         socket.join(roomId);
         let user = {
