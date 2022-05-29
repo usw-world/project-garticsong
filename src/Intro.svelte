@@ -5,6 +5,7 @@
     let userinfomationForm;
     
     onMount(() => {
+        document.querySelector(".input-username").focus();
         userinfomationForm.addEventListener("submit", (e) => {
             e.preventDefault();
             if(e.target["username"].value.trim() === "") {

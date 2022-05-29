@@ -47,7 +47,12 @@
 
     const COOKIE_EXPIRES_TIME = new Date(Date.now() + 900000)
     onMount(() => {
-        // console.log(thisGame);
+        socket.on("game-start", (updatedRoom) => {
+            game.update(game => {
+                return {...game, room : updatedRoom};
+            });
+            SetGameState(gameStateList.ROOM);
+        });
     });
 
     let isLoading = false;
@@ -75,7 +80,6 @@
             name: info.name,
             profileImage: info.profileImage
         };
-        // cookieManager.SetCookie("userInfo", JSON.stringify(player))
         game.update(game => {
             return {
                 ...game,

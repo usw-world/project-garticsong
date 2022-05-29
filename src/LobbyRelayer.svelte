@@ -63,12 +63,6 @@
         socket.on("someone-leaves", (userId) => {
             props.RemoveUser(userId);
         });
-        socket.on("game-start", (updatedRoom) => {
-            game.update(game => {
-                return {...game, room : updatedRoom};
-            });
-            props.SetGameState(props.gameStateList.ROOM);
-        });
     })
 
     async function JoinRoom(param) {

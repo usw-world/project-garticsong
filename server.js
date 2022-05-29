@@ -21,13 +21,14 @@ const io = new Server(server, {
 
 let guestBook = {};
 let rooms = {};
+let watingRooms = {};
 const RoomGenerator = (id, hostUser) => {
     let host = {
         id, 
         ...hostUser,
     };
     return {
-        roomId : id,
+        roomId : `room${id}`,
         host,
         users : [host],
     }
@@ -36,16 +37,9 @@ const RoomGenerator = (id, hostUser) => {
 io.on("connection", socket => {
     socket.on("create-room", (payload) => {
         console.log("created room :\n ", payload);
-        rooms[socket.id] = RoomGenerator(socket.id, payload.hostInfo);
-        socket.join(socket.id);
-        
-        // console.log("io rooms : ", io.rooms);
-        // console.log("server rooms : ", rooms);;
-        io.to(socket.id).emit("set-room", rooms[socket.id]);
-        // const userinfo = {
-        //     guestSocketId: socket.id,
-        // }
-        // socket.broadcast.emit("join-someone", userinfo);
+        rooms[`room${socket.id}`] = RoomGenerator(socket.id, payload.hostInfo);
+        socket.join(`room${socket.id}`);
+        io.to(socket.id).emit("set-room", rooms[`room${socket.id}`]);
     })
     socket.on("offer", (payload) => {
         payload.reciever = socket.id;
@@ -62,8 +56,8 @@ io.on("connection", socket => {
         socket.broadcast.emit("newIceCandidate", payload);
     })
     socket.on("join-room", (requestPayload) => {
-        if(rooms[requestPayload.parameter]) {
-            if(rooms[requestPayload.parameter].users.length >= 6) {
+        if(rooms[`${requestPayload.parameter}`]) {
+            if(rooms[`${requestPayload.parameter}`].users.length >= 6) {
                 let payload = {
                     status : "REJECT",
                     message : "reject : the room is full"
@@ -77,10 +71,10 @@ io.on("connection", socket => {
             PushUser(requestPayload.parameter, requestPayload.userinfo, socket.id);
             let payload = {
                 status : "SUCCESS",
-                room : rooms[requestPayload.parameter],
+                room : rooms[`${requestPayload.parameter}`],
             };
             io.to(socket.id).emit("enter-room", payload);
-            socket.to(requestPayload.parameter).emit("someone-enters", rooms[requestPayload.parameter], enteredUser);
+            socket.to(requestPayload.parameter).emit("someone-enters", rooms[`${requestPayload.parameter}`], enteredUser);
         } else { // not exist room : reject
             let payload = {
                 status : "REJECT",
@@ -89,18 +83,19 @@ io.on("connection", socket => {
             io.to(socket.id).emit("enter-room", payload);
         }
     })
+    socket.on("answer-to-sender", (answer, senderId) => {
+        socket.to(senderId).emit("answer-to-sender", answer, socket.id);
+    })
     socket.on("check-room", (roomId) => {
-        io.to(socket.id).emit("result-check", !!rooms[roomId]);
+        io.to(socket.id).emit("result-check", !!rooms[`${roomId}`]);
     })
     socket.on("disconnect", () => {
         console.log("someone left the game");
         RemoveUser(guestBook[socket.id], socket.id);
         io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
     })
-    let watingRooms = {};
     socket.on("game-start", (room) => {
-        watingRooms[room.roomId] = [...room.users];
-        console.log(watingRooms);
+        watingRooms[`${room.roomId}`] = [...room.users];
         io.to(room.roomId).emit("game-start", room);
     })
     socket.on("ready-to-connect", (roomid) => {
@@ -113,24 +108,30 @@ io.on("connection", socket => {
             ConnectAsP2P(roomid)
         }
     })
+    socket.on("offer-to-another", (offer, payload) => {
+        io.to([payload.targetUser.id]).emit("offer-answer", offer, socket.id);
+    })
     const ConnectAsP2P = (roomid) => {
-        let users = rooms[roomid].users;
+        let users = rooms[`${roomid}`].users;
         if(users.length<=1) return;
 
         for(let i=0; i<users.length; i++) {
-            for(let j=i+1; j<user.length; j++) {
-                io.to(users[i].id).emit("connect-this")
+            for(let j=i+1; j<users.length; j++) {
+                const payload = {
+                    targetUser : users[j]
+                }
+                io.to([users[i].id]).emit('offer-description', payload);
             }
         }
     }
     const PushUser = (roomId, userinfo, socketId) => {
-        socket.join(roomId);
+        socket.join(`${roomId}`);
         let user = {
             ...userinfo,
             id : socketId,
         }
         guestBook[socketId] = roomId;
-        rooms[roomId].users.push(user);
+        rooms[`${roomId}`].users.push(user);
     }
     const RemoveUser = (targetRoomId, targetUserId) => {
         if(targetRoomId) {
