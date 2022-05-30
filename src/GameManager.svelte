@@ -53,6 +53,9 @@
             });
             SetGameState(gameStateList.ROOM);
         });
+        socket.on("disconnect", () => {
+            console.log("client is free");
+        })
     });
 
     let isLoading = false;
@@ -77,6 +80,7 @@
     }
     let SetPlayerInformation = (info) => {
         let player = {
+            id: info.id,
             name: info.name,
             profileImage: info.profileImage
         };

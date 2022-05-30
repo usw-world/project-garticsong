@@ -22,6 +22,7 @@ const io = new Server(server, {
 let guestBook = {};
 let rooms = {};
 let watingRooms = {};
+let connectingRooms = {};
 const RoomGenerator = (id, hostUser) => {
     let host = {
         id, 
@@ -95,7 +96,8 @@ io.on("connection", socket => {
         io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
     })
     socket.on("game-start", (room) => {
-        watingRooms[`${room.roomId}`] = [...room.users];
+        watingRooms[room.roomId] = [...room.users];
+        connectingRooms[room.roomId] = [...room.users];
         io.to(room.roomId).emit("game-start", room);
     })
     socket.on("ready-to-connect", (roomid) => {
@@ -111,6 +113,22 @@ io.on("connection", socket => {
     socket.on("offer-to-another", (offer, payload) => {
         io.to([payload.targetUser.id]).emit("offer-answer", offer, socket.id);
     })
+    socket.on("successed-connecting-all", (room) => {
+        connectingRooms[room.roomId] = connectingRooms[room.roomId].filter(user => {
+            return user.id !== socket.id;
+        })
+        if(connectingRooms[room.roomId].length <= 0) {
+            ReleaseRoom(room.roomId);
+        }
+    })
+    const ReleaseRoom = (roomId) => {
+        // console.log(rooms[roomId].users);
+        rooms[roomId].users.forEach(user => {
+            console.log(user.id);
+            io.to(user.id).emit("ready-to-start");
+            io.sockets.sockets.get(user.id).disconnect();
+        })
+    }
     const ConnectAsP2P = (roomid) => {
         let users = rooms[`${roomid}`].users;
         if(users.length<=1) return;
@@ -127,8 +145,8 @@ io.on("connection", socket => {
     const PushUser = (roomId, userinfo, socketId) => {
         socket.join(`${roomId}`);
         let user = {
-            ...userinfo,
             id : socketId,
+            ...userinfo,
         }
         guestBook[socketId] = roomId;
         rooms[`${roomId}`].users.push(user);

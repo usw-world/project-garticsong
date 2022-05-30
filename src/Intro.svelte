@@ -1,5 +1,8 @@
 <script>
     import { onMount } from "svelte";
+    import { socket as mainSocket } from "./store";
+    let socket;
+    mainSocket.subscribe(value => { socket = value })
     export let props;
 
     let userinfomationForm;
@@ -14,6 +17,7 @@
             }
 
             props.SetPlayerInformation({
+                id: socket.id,
                 name: e.target["username"].value,
                 profileImage: 0
             });

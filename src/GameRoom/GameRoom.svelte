@@ -60,6 +60,15 @@
         });
         console.log(thisGame);
     }
+    const PushUserToConnectedUsers = (user) => {
+        game.update(game => {
+            return {
+                ...game,
+                connectedUsers : [...thisGame.connectedUsers, user],
+            }
+        })
+        console.log(thisGame);
+    }
     function HandleNewCandidate(pc, payload) {
         if(pc.remoteSocketId === payload.guestSocketId)
             pc.addIceCandidate(payload.candidate)
@@ -68,14 +77,39 @@
                 (error) => { console.error(error); }
             );
     }
+    function OnIceCandidate(e) {
+        if(e.candidate) socket.emit("newIceCandidate", e.candidate);
+    }
     function OnMessage(e) {
         const channel = e.channel;
         channel.onmessage = (e) => {
-            console.log("Message arrived", e.data);
+            const data = JSON.parse(e.data);
+            switch(data.type) {
+                case "connect":
+                    PushUserToConnectedUsers(data.sender);
+                    let uncheckedUsers = [...thisGame.room.users];
+                    thisGame.connectedUsers.forEach(user => {
+                        let sender = uncheckedUsers.find(item => item.id === user.id);
+                        if(sender) {
+                            uncheckedUsers = uncheckedUsers.filter(item => item.id !== sender.id);
+                        } else {
+                            console.error("not exist user was connected! what the heck!");
+                            return;
+                        }
+                        if(uncheckedUsers.length === 1 && uncheckedUsers[0].id === thisGame.player.id) {
+                            socket.emit("successed-connecting-all", thisGame.room);
+                        }
+                    })
+                    break;
+            }
         }
     }
-    function OnIceCandidate(e) {
-        if(e.candidate) socket.emit("newIceCandidate", e.candidate);
+    function OnOpenChannel(e) {
+        console.log("Channel is Opened ", e);
+        e.currentTarget.send(JSON.stringify({
+            sender : thisGame.player,
+            type : "connect"
+        }));
     }
     onMount(() => {
         game.update(game => {
@@ -83,6 +117,7 @@
                 ...game,
                 peerConnections : {},
                 signalChannels : {},
+                connectedUsers : []
             };
         });
         socket.on("offer-answer", async (offer, senderId) => { // remote-1
@@ -96,7 +131,7 @@
             })
 
             let channel = await localPeerConnection.createDataChannel('signal');
-            channel.onopen = (e) => { console.log("Channel is Opned", e) };
+            channel.onopen = OnOpenChannel;
             channel.onclose = (e) => { console.log("Channel is Closed", e) };
             PushDataChannelToArray(channel, senderId);
 
@@ -107,7 +142,6 @@
         })
         socket.on("answer-to-sender", async (answer, answererId) => { // local-2
             let peerConnection =  thisGame.peerConnections[answererId];
-            console.log(peerConnection);
             peerConnection.remoteSocketId = answererId;
             if(peerConnection) {
                 peerConnection.setRemoteDescription(answer);
@@ -123,13 +157,16 @@
             })
 
             let channel = await localPeerConnection.createDataChannel('signal');
-            channel.onopen = (e) => { console.log("Channel is Opned", e) };
+            channel.onopen = OnOpenChannel;
             channel.onclose = (e) => { console.log("Channel is Closed", e) };
             PushDataChannelToArray(channel, payload.targetUser.id);
 
             const offer = await localPeerConnection.createOffer();
             localPeerConnection.setLocalDescription(offer);
             socket.emit("offer-to-another", offer, payload)
+        })
+        socket.on("ready-to-start", () => {
+            isLoaded = true;
         })
         socket.emit("ready-to-connect", thisGame.room.roomId);
     });

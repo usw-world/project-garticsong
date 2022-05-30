@@ -12,8 +12,6 @@
     let inviteLink = "https://garticsong.herokuapp.com/?jr=";
     let inviteLinkElmt;
 
-    
-    onMount(() => {})
     function AddUser(_id/* string */, _name/* string */, _profileImage/* number */) {
         console.log(thisGame.room.users);
         let newUser = {
@@ -29,7 +27,19 @@
         });
     }
     const OnCopyButton = () => {
-        navigator.clipboard.writeText(inviteLink);
+        if(navigator.clipboard) {
+            navigator.clipboard.writeText(inviteLink);
+        } else {
+            let ta;
+            try {
+                ta = document.createElement("textarea")
+                document.body.appendChild(ta);
+                ta.value = inviteLink;
+                ta.select();
+                document.execCommand("copy");
+            } catch {};
+            document.body.removeChild(ta);
+        }
     }
     const SetInviteLink = (nextLink) => {
         inviteLink = `https://garticsong.herokuapp.com/?jr=${nextLink}`;
