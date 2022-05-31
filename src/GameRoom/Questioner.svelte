@@ -2,7 +2,6 @@
     import { onMount } from "svelte";
     export let OnFinish;
 
-    let videoPlayerElmt;
     let questionOrder = 0;
     let wrapper;
     let answerInput;
@@ -60,7 +59,6 @@
                 document.querySelector("#submit-button").focus();
                 break;
         }
-        // questionOrder++;
         answerElmt.value = "";
         ResetInput();
     }

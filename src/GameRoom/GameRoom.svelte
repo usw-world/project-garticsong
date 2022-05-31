@@ -13,6 +13,8 @@
     mainSocket.subscribe(value => { socket = value; });
 
     let isLoaded = false;
+    let isPlaying = false;
+    let readiedUsers = [];
 
     const iceConfiguration = {'iceServers': [
         {
@@ -101,6 +103,14 @@
                         }
                     })
                     break;
+                case "readied-to-question":
+                    UserIsReady(data.sender.id);
+                    break;
+                case "start":
+                    ReadyToAnswer();
+                    break;
+                case "make-questioner":
+                    break;
             }
         }
     }
@@ -171,15 +181,61 @@
         socket.emit("ready-to-connect", thisGame.room.roomId);
     });
 
-    let isCleared = false;
-    let questionElmt;
-    let answerObj;
+    let questionWasWroten = false;
+    let question;
 
-    const OnFinishQuestion = (answer) => {
-        answerObj = {...answer};
+    const OnFinishQuestion = (questionInfo) => {
+        isLoaded = false;
+        question = {...questionInfo};
+        game.update(game => {
+            return {
+                ...game,
+                myQuestion: questionInfo,
+            }
+        });
         setTimeout(() => {
-            questionElmt.$destroy();
-            isCleared = true;
+            questionWasWroten = true;
+        }, 400);
+        
+        if(thisGame.isGuest) { // guest case
+            const hostId = thisGame.room.host.id;
+            let data = {
+                sender: thisGame.player,
+                type: "readied-to-question",
+            }
+            thisGame.signalChannels[hostId].send(JSON.stringify(data));
+        } else { // host case
+            UserIsReady(thisGame.player.id)
+        }
+    }
+    function UserIsReady(userId) {
+        readiedUsers.push(userId);
+        let remainingUsersNumber = thisGame.room.users.filter(user => {
+            return readiedUsers.indexOf(user.id) < 0;
+        }).length;
+        if(remainingUsersNumber<=0) {
+            let data = {
+                type: "start"
+            }
+            SendMessageAll(data);
+            ReadyToAnswer();
+        }
+    }
+    function SendMessageAll(data) {
+        data = {
+            ...data,
+            sender: thisGame.player,
+        };
+        thisGame.room.users.forEach(user => {
+            if(thisGame.player.id !== user.id) {
+                thisGame.signalChannels[user.id].send(JSON.stringify(data));
+            }
+        })
+    }
+    function ReadyToAnswer() {
+        setTimeout(() => {
+            isLoaded = true;
+            isPlaying = true;
         }, 400);
     }
 </script>
@@ -191,12 +247,12 @@
     <div class="room-right">
         {#if !isLoaded}
             <LoadingComponent />
-        {:else if !isCleared}
+        {:else if !questionWasWroten}
             <div class="box-wrapper">
-                <Questioner bind:this={questionElmt} OnFinish={OnFinishQuestion}></Questioner>
+                <Questioner OnFinish={OnFinishQuestion}></Questioner>
             </div>
         {:else}
-            <AnswerRoom answerObj={answerObj} />
+            <AnswerRoom question={question} />
         {/if}
     </div>
 </div>

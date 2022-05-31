@@ -1,52 +1,23 @@
 <script>
     import { onMount } from "svelte";
-    export let answerObj;
-    console.log(answerObj);
-    let hint = answerObj.description;
-    let value, videoPlayerElmt;
-    let url = answerObj.videoInfo;
+    import VideoPlayer from "./VideoPlayer.svelte";
+    export let question;
+    console.dir(question);
     let answerInput;
-    let disabled = false;
-
-    // setTimeout(() => {
-
-    // }, 3000);
+    let showingInput = false;
     onMount(() => {
-        disabled = true;
-        LoadNewVideo(url);
+        setTimeout(() => {
+            showingInput = true;
+            answerInput.focus();
+        }, 3000);
     });
-    function LoadNewVideo(url) {
-        const CHILD_ID = "youtube-video-player";
-        if(document.querySelector(`#${CHILD_ID}`)) {
-            document.querySelector("#player-wrap").removeChild(document.querySelector(`#${CHILD_ID}`));
-        }
-        let child = document.createElement("div");
-        child.id = CHILD_ID;
-        console.log(url);
-        document.querySelector("#player-wrap").appendChild(child);
-        videoPlayerElmt = new YT.Player(CHILD_ID, {
-            videoId: url,
-			// width: 0,
-			// height: 0,
-            events: {
-                // "onReady": onPlayerReady,
-                // "onStatChange": OnStatChange,
-            }
-        });
-    }
-    function OnStatChange(e) {
-        e.target.playVideo();
-      }
-
     function OnSubmit(e){
-        value = e.target.answer.value;
+        let value = e.target.answer.value;
         console.log(value);
-        console.log(answerObj.title);
-        
-        if ( value === answerObj.title){
-            OnAnswerInput();
-        }
-        else {
+        console.log(question.title);
+        if (value === question.title){
+            OnGuess();
+        } else {
             OnInputError();
         }
     }
@@ -56,23 +27,23 @@
     function ResetInput() {
         answerInput.style.animation = "none";
     }
-    function OnAnswerInput() {
+    function OnGuess() {
         answerInput.style.animation = "inputAnswer 400ms ease 1 forwards";
     }
 </script>
 
 <form class="question-form" on:submit|preventDefault = {OnSubmit}>
-    <div id="player-wrap"></div>
-    <div class="input-wrap">
-        {#if !disabled}
-            <div class="answer-described">곡 설명! <br>{hint}</div>
-            
-        {:else}
-            <div class="answer-request">정답을 입력하세요!</div>
-            <input type="text" class="answer-answer" name="answer" bind:this={answerInput} on:focus={ResetInput} autocomplete="off"><br />
-            <input id="answer-submit-button" class="answer-button" type="submit" value="제출">
-        {/if}
+    <div class="input-wrap" style="
+        height: {showingInput ? "23" : "0"}%;
+        opacity: {showingInput ? "1" : "0"};
+        margin-top: {showingInput ? "10" : "3"}rem;
+    ">
+        <VideoPlayer videoId={question.videoInfo.videoId} />
+        <div class="answer-request">정답을 입력하세요!</div>
+        <input type="text" class="answer-answer" name="answer" bind:this={answerInput} on:focus={ResetInput} autocomplete="off"><br />
+        <!-- <input id="answer-submit-button" class="answer-button" type="submit" value="제출"> -->
     </div>
+    <div class="answer-description">{question.description}</div>
 </form>
 
 <style>
@@ -81,18 +52,30 @@
         height: 100%;
     }
     .input-wrap {
+        transition: height 400ms ease,
+                    margin 400ms ease,
+                    opacity 400ms ease;
         position: relative;
-        display: flex;
         width: 100%;
+        height: 0%;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
+        text-align: center;
+        overflow: hidden;
     }
-    .answer-described {
+    .answer-description {
+        width: 60%;
+        max-height: 45%;
+        padding: 3rem;
+        margin: 0 auto 2.5rem;
         font-size: 3rem;
         font-weight: 900;
         text-align: center;
-        line-height: 3;
+        border: .8rem solid rgba(255, 255, 255, .1);
+        /* background-color: rgba(255, 255, 255, .1); */
+        border-radius: 2.4rem;
+        line-height: 1.4;
+        box-sizing: border-box;
+        overflow: hidden;
     }
     .answer-request{
         margin-bottom: 1.8rem;
@@ -105,21 +88,20 @@
         display: inline-block;
         padding: 1rem 0;
         height: auto;
-
+        border-width: .8rem;
     }
     .answer-answer {
         transition: color 400ms ease;
         text-align: center;
+        width: 56rem;
+        height: 5rem;
         padding: 1rem;
         margin-bottom: 3rem;
         overflow: hidden;
-        width: 40rem;
-        resize: none;
         overflow: hidden;
-        /* animation: inputError 400ms ease 1 forwards; */
     }
-    input[type="submit"] {
+    /* input[type="submit"] {
         display: inline-block;
         padding: 1rem 2rem;
-    }
+    } */
 </style>

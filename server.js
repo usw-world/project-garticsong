@@ -128,6 +128,7 @@ io.on("connection", socket => {
             io.to(user.id).emit("ready-to-start");
             io.sockets.sockets.get(user.id).disconnect();
         })
+        delete rooms[roomId];
     }
     const ConnectAsP2P = (roomid) => {
         let users = rooms[`${roomid}`].users;
