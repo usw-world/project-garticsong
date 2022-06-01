@@ -2,7 +2,8 @@
     import UserInfo from '../UserInformation.svelte';
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
-    import AnswerRoom from './AnswerRoom.svelte'
+    import QuestionUserInterface from './QuestionUserInterface.svelte';
+    import AnswerForm from './AnswerForm.svelte'
     import { onMount } from 'svelte';
     import { game, socket as mainSocket } from '../store';
     // export let props;
@@ -14,7 +15,9 @@
 
     let isLoaded = false;
     let isPlaying = false;
+    let currectAnswerer = null;
     let readiedUsers = [];
+    let bringers = [];
 
     const iceConfiguration = {'iceServers': [
         {
@@ -86,33 +89,88 @@
         const channel = e.channel;
         channel.onmessage = (e) => {
             const data = JSON.parse(e.data);
-            switch(data.type) {
-                case "connect":
-                    PushUserToConnectedUsers(data.sender);
-                    let uncheckedUsers = [...thisGame.room.users];
-                    thisGame.connectedUsers.forEach(user => {
-                        let sender = uncheckedUsers.find(item => item.id === user.id);
-                        if(sender) {
-                            uncheckedUsers = uncheckedUsers.filter(item => item.id !== sender.id);
-                        } else {
-                            console.error("not exist user was connected! what the heck!");
-                            return;
-                        }
-                        if(uncheckedUsers.length === 1 && uncheckedUsers[0].id === thisGame.player.id) {
-                            socket.emit("successed-connecting-all", thisGame.room);
-                        }
-                    })
-                    break;
-                case "readied-to-question":
-                    UserIsReady(data.sender.id);
-                    break;
-                case "start":
-                    ReadyToAnswer();
-                    break;
-                case "make-questioner":
-                    break;
-            }
+            MessageEventHandler(data);
         }
+    }
+    const MessageEventHandler = (eventData) => {
+        switch(eventData.type) {
+            case "connect":
+                PushUserToConnectedUsers(eventData.sender);
+                let uncheckedUsers = [...thisGame.room.users];
+                thisGame.connectedUsers.forEach(user => {
+                    let sender = uncheckedUsers.find(item => item.id === user.id);
+                    if(sender) {
+                        uncheckedUsers = uncheckedUsers.filter(item => item.id !== sender.id);
+                    } else {
+                        console.error("not exist user was connected! what the heck!");
+                        return;
+                    }
+                    if(uncheckedUsers.length === 1 && uncheckedUsers[0].id === thisGame.player.id) {
+                        socket.emit("successed-connecting-all", thisGame.room);
+                    }
+                })
+                break;
+            case "readied-to-question":
+                UserIsReady(eventData.sender.id);
+                break;
+            case "set-question":
+                ReadyToAnswer(eventData.question);
+                break;
+            case "make-questioner":
+                bringers = [...thisGame.room.users];
+                const data = {
+                    type: "set-question",
+                    question: {
+                        ...localQuestion,
+                        author: thisGame.player,
+                    },
+                }
+                SendMessageAll(data, true);
+                break;
+            case "readied-to-play-music":
+                bringers = bringers.filter(bringer => {
+                    bringer.id !== eventData.sender;
+                });
+                if(bringers.length <= 0) {
+                    const data = {
+                        type: "start-round",
+                    }
+                    SendMessageAll(data, true);
+                }
+                break;
+            case "start-round":
+                currectAnswerer = eventData.answerer;
+                game.update(game => {
+                    return {
+                        ...game,
+                        room: {
+                            ...thisGame.room,
+                            roundStarted: true,
+                        }
+                    }
+                })
+                StartRound();
+                break;
+            case "submit-answer":
+                const result = CheckAnswer(eventData.title);
+                if(result) {
+                    SendMessageAll({
+                        type: "someone-guessed",
+                        answerer: eventData.sender,
+                    }, true)
+                }
+                break;
+            case "someone-guessed":
+                currectAnswerer = eventData.answerer;
+                console.log(currectAnswerer);
+                break;
+        }
+    }
+    function CheckAnswer(title) {
+        if(title === thisGame.room.currentQuestion.title)
+            return true;
+        else
+            return false;
     }
     function OnOpenChannel(e) {
         console.log("Channel is Opened ", e);
@@ -182,11 +240,11 @@
     });
 
     let questionWasWroten = false;
-    let question;
+    let localQuestion;
 
     const OnFinishQuestion = (questionInfo) => {
         isLoaded = false;
-        question = {...questionInfo};
+        localQuestion = {...questionInfo};
         game.update(game => {
             return {
                 ...game,
@@ -214,29 +272,71 @@
             return readiedUsers.indexOf(user.id) < 0;
         }).length;
         if(remainingUsersNumber<=0) {
-            let data = {
-                type: "start"
+            const data = {
+                type: "make-questioner"
             }
-            SendMessageAll(data);
-            ReadyToAnswer();
+            SendMessage(data, readiedUsers.shift());
         }
     }
-    function SendMessageAll(data) {
+    function SendMessage(data, targetUserId) {
+        data = {
+            ...data,
+            sender: thisGame.player,
+        };
+        if(thisGame.player.id !== targetUserId && thisGame.signalChannels[targetUserId])
+            thisGame.signalChannels[targetUserId].send(JSON.stringify(data));
+        else 
+            MessageEventHandler(data);
+    }
+    function SendMessageAll(data, sendSelf) {
         data = {
             ...data,
             sender: thisGame.player,
         };
         thisGame.room.users.forEach(user => {
-            if(thisGame.player.id !== user.id) {
+            if(thisGame.player.id !== user.id)
                 thisGame.signalChannels[user.id].send(JSON.stringify(data));
-            }
+            else 
+                if(sendSelf)
+                    MessageEventHandler(data);
         })
     }
-    function ReadyToAnswer() {
+    function ReadyToAnswer(question) {
+        game.update(game => {
+            return {
+                ...game,
+                room: {
+                    ...thisGame.room,
+                    currentQuestion: question,
+                }
+            }
+        });
         setTimeout(() => {
             isLoaded = true;
             isPlaying = true;
         }, 400);
+    }
+    function OnReadyToPlayMusic(e) {
+        const data = {
+            type: "readied-to-play-music",
+        }
+        console.log(e);
+        SendMessage(data, thisGame.room.currentQuestion.author.id);
+    }
+    let startRoundCallback;
+    function AddEventStartRound(callback) {
+        startRoundCallback = callback.bind({});
+    }
+    function StartRound() {
+        if(startRoundCallback)
+            startRoundCallback();
+    }
+    function SubmitAnswer(title) {
+        const data = {
+            type: "submit-answer",
+            title,
+        };
+        SendMessage(data, thisGame.room.currentQuestion.author.id);
     }
 </script>
 
@@ -246,13 +346,24 @@
     </div>
     <div class="room-right">
         {#if !isLoaded}
-            <LoadingComponent />
-        {:else if !questionWasWroten}
-            <div class="box-wrapper">
-                <Questioner OnFinish={OnFinishQuestion}></Questioner>
-            </div>
-        {:else}
-            <AnswerRoom question={question} />
+                <LoadingComponent />
+            {:else}
+                {#if !questionWasWroten}
+                    <div class="box-wrapper">
+                        <Questioner OnFinish={OnFinishQuestion}></Questioner>
+                    </div>
+                {:else}
+                    {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
+                        <AnswerForm 
+                            OnReady={OnReadyToPlayMusic} 
+                            AddEventStartRound={AddEventStartRound} 
+                            SubmitAnswer={SubmitAnswer}
+                            currectAnswerer={currectAnswerer}
+                        />
+                    {:else}
+                        <QuestionUserInterface />
+                    {/if}
+            {/if}
         {/if}
     </div>
 </div>

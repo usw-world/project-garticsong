@@ -1,8 +1,18 @@
 <script>
     import { onMount } from "svelte";
-
+    import { game } from "../store";
+    let thisGame;
+    game.subscribe(value => {
+        thisGame = value;
+    })
+    
+    export let OnReady;
     export let videoId;
+    export let AddEventStartRound;
+    export let StartEvent;
+
     let videoPlayerElmt;
+    let targetVideo;
 
     onMount(() => {
         LoadNewVideo(videoId);
@@ -19,16 +29,21 @@
             videoId: videoId,
 			height: 1,
             events: {
-                "onReady": OnPlayerReady,
+                "onReady": OnReadyPlay,
                 "onStatChange": OnStatChange,
             }
         });
     }
-    function PlayMusic(e) {
-        e.target.playVideo();
+    function PlayMusic() {
+        setTimeout(() => {
+            StartEvent();
+            targetVideo.playVideo();
+        }, 2000);
     }
-    function OnPlayerReady(e) {
-        PlayMusic(e);
+    function OnReadyPlay(e) {
+        targetVideo = e.target;
+        AddEventStartRound(PlayMusic);
+        OnReady(e)
     }
     function OnStatChange(e) {
         e.target.playVideo();

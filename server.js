@@ -12,6 +12,7 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     cors: {
         origin: [
+            "http://125.190.241.9:2000",
             "http://10.30.5.129:2000",
             "http://192.168.219.101:2000",
             "http://localhost:2000",
