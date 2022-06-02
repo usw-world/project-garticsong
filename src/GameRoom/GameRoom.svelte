@@ -3,6 +3,7 @@
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
     import QuestionUserInterface from './QuestionUserInterface.svelte';
+    import CurrectAnswerer from "./CurrectAnswerer.svelte";
     import AnswerForm from './AnswerForm.svelte'
     import { onMount } from 'svelte';
     import { game, socket as mainSocket } from '../store';
@@ -161,8 +162,16 @@
                 }
                 break;
             case "someone-guessed":
+                game.update(game => {
+                    return {
+                        ...game,
+                        room: {
+                            ...thisGame.room,
+                            lastQuestion: {...thisGame.room.currentQuestion},
+                        }
+                    }
+                })
                 currectAnswerer = eventData.answerer;
-                console.log(currectAnswerer);
                 break;
         }
     }
@@ -347,22 +356,24 @@
     <div class="room-right">
         {#if !isLoaded}
                 <LoadingComponent />
+        {:else}
+            {#if !questionWasWroten}
+                <div class="box-wrapper">
+                    <Questioner OnFinish={OnFinishQuestion}></Questioner>
+                </div>
             {:else}
-                {#if !questionWasWroten}
-                    <div class="box-wrapper">
-                        <Questioner OnFinish={OnFinishQuestion}></Questioner>
-                    </div>
+                {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
+                    <AnswerForm 
+                        OnReady={OnReadyToPlayMusic} 
+                        AddEventStartRound={AddEventStartRound} 
+                        SubmitAnswer={SubmitAnswer}
+                    />
                 {:else}
-                    {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
-                        <AnswerForm 
-                            OnReady={OnReadyToPlayMusic} 
-                            AddEventStartRound={AddEventStartRound} 
-                            SubmitAnswer={SubmitAnswer}
-                            currectAnswerer={currectAnswerer}
-                        />
-                    {:else}
-                        <QuestionUserInterface />
-                    {/if}
+                    <QuestionUserInterface />
+                {/if}
+            {/if}
+            {#if currectAnswerer}
+                <CurrectAnswerer user={currectAnswerer}/>
             {/if}
         {/if}
     </div>
@@ -381,9 +392,11 @@
     }
     .room-left,
     .room-right {
+        position: relative;
         height: 100%;
         box-sizing: border-box;
         border: 5px solid transparent;
+        overflow: hidden;
     }
     .room-left {
         width: 22%;

@@ -6,12 +6,10 @@
     })
     import { onMount } from "svelte";
     import VideoPlayer from "./VideoPlayer.svelte";
-    import CurrectAnswerer from "./CurrectAnswerer.svelte";
 
     export let OnReady;
     export let AddEventStartRound;
     export let SubmitAnswer;
-    export let currectAnswerer;
     console.dir(thisGame.room.currentQuestion);
     let answerInput;
     let showingInput = false;
@@ -42,30 +40,26 @@
 </script>
 
 <form class="question-form" on:submit|preventDefault = {OnSubmit}>
-    {#if !currectAnswerer}
-        <div class="input-wrap" style="
-            height: {showingInput ? "23" : "0"}%;
-            opacity: {showingInput ? "1" : "0"};
-            margin-top: {showingInput ? "10" : "3"}rem;
-        ">
-            <VideoPlayer 
-                OnReady={OnReady} 
-                videoId={thisGame.room.currentQuestion.videoInfo.videoId} 
-                AddEventStartRound={AddEventStartRound}
-                StartEvent={StartEvent}
-            />
-            <div class="answer-request">정답을 입력하세요!</div>
-            <input type="text" class="answer-answer" name="answer" bind:this={answerInput} 
-                on:focus="{ResetInputStatus}"
-                on:input="{ResetInputStatus}"
-                autocomplete="off"
-            >
-            <input id="answer-submit-button" class="answer-button" type="submit" value="확인">
-        </div>
-        <div class="answer-description">{thisGame.room.currentQuestion.description}</div>
-    {:else}
-        <CurrectAnswerer user={currectAnswerer} />
-    {/if}
+    <div class="input-wrap" style="
+        height: {showingInput ? "23" : "0"}%;
+        opacity: {showingInput ? "1" : "0"};
+        margin-top: {showingInput ? "10" : "3"}rem;
+    ">
+        <VideoPlayer 
+            OnReady={OnReady} 
+            videoId={thisGame.room.currentQuestion.videoInfo.videoId} 
+            AddEventStartRound={AddEventStartRound}
+            StartEvent={StartEvent}
+        />
+        <div class="answer-request">정답을 입력하세요!</div>
+        <input type="text" class="answer-answer" name="answer" bind:this={answerInput} 
+            on:focus="{ResetInputStatus}"
+            on:input="{ResetInputStatus}"
+            autocomplete="off"
+        >
+        <input id="answer-submit-button" class="answer-button" type="submit" value="확인">
+    </div>
+    <div class="answer-description">{thisGame.room.currentQuestion.description}</div>
 </form>
 
 <style>
