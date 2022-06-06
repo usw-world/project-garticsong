@@ -45,12 +45,18 @@
         };
     })();
 
-    const COOKIE_EXPIRES_TIME = new Date(Date.now() + 900000)
+    const COOKIE_EXPIRES_TIME = new Date(Date.now() + 900000) // 15minute
     onMount(() => {
         socket.on("game-start", (updatedRoom) => {
+            console.log(updatedRoom);
             game.update(game => {
-                return {...game, room : updatedRoom};
+                console.log(game)
+                return {
+                    ...game,
+                    room : {...updatedRoom},
+                };
             });
+            console.log(thisGame);
             SetGameState(gameStateList.ROOM);
         });
         socket.on("disconnect", () => {

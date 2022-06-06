@@ -91,12 +91,14 @@ io.on("connection", socket => {
     socket.on("check-room", (roomId) => {
         io.to(socket.id).emit("result-check", !!rooms[`${roomId}`]);
     })
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (message) => {
+        if(message === "server namespace disconnect") return;
         console.log("someone left the game");
         RemoveUser(guestBook[socket.id], socket.id);
         io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
     })
     socket.on("game-start", (room) => {
+        console.log("this is room that I received", room);
         watingRooms[room.roomId] = [...room.users];
         connectingRooms[room.roomId] = [...room.users];
         io.to(room.roomId).emit("game-start", room);
@@ -123,7 +125,6 @@ io.on("connection", socket => {
         }
     })
     const ReleaseRoom = (roomId) => {
-        // console.log(rooms[roomId].users);
         rooms[roomId].users.forEach(user => {
             console.log(user.id);
             io.to(user.id).emit("ready-to-start");
@@ -138,7 +139,7 @@ io.on("connection", socket => {
         for(let i=0; i<users.length; i++) {
             for(let j=i+1; j<users.length; j++) {
                 const payload = {
-                    targetUser : users[j]
+                    targetUser : users[j],
                 }
                 io.to([users[i].id]).emit('offer-description', payload);
             }

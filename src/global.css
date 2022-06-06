@@ -162,6 +162,19 @@ textarea {
 		border-color : #2b95ff;
 	}
 }
+@keyframes fadeUpInAbs {
+	0% {
+		position: absolute;
+		bottom: -25%;
+		opacity: 0;
+	}
+	100%
+	{
+		position: absolute;
+		bottom: 0;
+		opacity: 1;
+	}
+}
 @keyframes fadeUpIn {
 	0% {
 		position: relative;

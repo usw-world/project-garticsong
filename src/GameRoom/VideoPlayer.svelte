@@ -8,8 +8,10 @@
     
     export let OnReady;
     export let videoId;
-    export let AddEventStartRound;
-    export let StartEvent;
+    export let startRound;
+    export let endRound;
+    export let OnRoundStart;
+    export let OnRoundEnd;
 
     let videoPlayerElmt;
     let targetVideo;
@@ -29,21 +31,31 @@
             videoId: videoId,
 			height: 1,
             events: {
-                "onReady": OnReadyPlay,
+                "onReady": OnReadyToPlay,
                 "onStatChange": OnStatChange,
             }
         });
     }
-    function PlayMusic() {
+    function StartRoundHandler() {
         setTimeout(() => {
-            StartEvent();
+            OnRoundStart();
             targetVideo.playVideo();
         }, 2000);
     }
-    function OnReadyPlay(e) {
+    function StopRoundHandler() {
+        OnRoundEnd();
+        const currentVolume = targetVideo.getVolume();
+        for(let i=0; i<10; i++) {
+            setTimeout(() => {
+                targetVideo.setVolume(currentVolume - currentVolume / 10 * (i+1));
+            }, 200*i);
+        }
+    }
+    function OnReadyToPlay(e) {
         targetVideo = e.target;
-        AddEventStartRound(PlayMusic);
-        OnReady(e)
+        startRound.AddEvent(StartRoundHandler);
+        endRound.AddEvent(StopRoundHandler);
+        OnReady(e);
     }
     function OnStatChange(e) {
         e.target.playVideo();

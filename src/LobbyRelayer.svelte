@@ -76,6 +76,7 @@
                             room : payload.room
                         };
                     });
+                    console.log(thisGame);
                     props.SetInviteLink(payload.room.roomId);
                 }
                 if(payload.status === "REJECT") {

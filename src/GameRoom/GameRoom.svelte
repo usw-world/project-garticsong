@@ -3,6 +3,7 @@
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
     import QuestionUserInterface from './QuestionUserInterface.svelte';
+    import ResultScreen from './ResultScreen.svelte';
     import CurrectAnswerer from "./CurrectAnswerer.svelte";
     import AnswerForm from './AnswerForm.svelte'
     import { onMount } from 'svelte';
@@ -115,32 +116,29 @@
                 UserIsReady(eventData.sender.id);
                 break;
             case "set-question":
+                console.log(eventData);
                 ReadyToAnswer(eventData.question);
                 break;
             case "make-questioner":
+                // console.log("Receive the message to make me questioner", eventData);
                 bringers = [...thisGame.room.users];
-                const data = {
+                SendMessageAll({
                     type: "set-question",
                     question: {
                         ...localQuestion,
                         author: thisGame.player,
                     },
-                }
-                SendMessageAll(data, true);
+                }, true);
                 break;
             case "readied-to-play-music":
                 bringers = bringers.filter(bringer => {
                     bringer.id !== eventData.sender;
                 });
                 if(bringers.length <= 0) {
-                    const data = {
-                        type: "start-round",
-                    }
-                    SendMessageAll(data, true);
+                    SendMessageAll({type: "start-round"}, true);
                 }
                 break;
             case "start-round":
-                currectAnswerer = eventData.answerer;
                 game.update(game => {
                     return {
                         ...game,
@@ -150,7 +148,7 @@
                         }
                     }
                 })
-                StartRound();
+                startRound.Run();
                 break;
             case "submit-answer":
                 const result = CheckAnswer(eventData.title);
@@ -172,7 +170,48 @@
                     }
                 })
                 currectAnswerer = eventData.answerer;
+                endRound.Run();
+
+                if(!thisGame.isGuest) {
+                    let updatedGame = {...thisGame};
+                    let questionerPoint = thisGame.room.setting && thisGame.room.setting.questionerPoint || 100;
+                    let answererPoint = thisGame.room.setting && thisGame.room.setting.answerer || 100;
+                    updatedGame.room.score[thisGame.room.currentQuestion.author.id] = updatedGame.room.score[thisGame.room.currentQuestion.author.id] + questionerPoint;
+                    updatedGame.room.score[eventData.answerer.id] = updatedGame.room.score[eventData.answerer.id] + answererPoint;
+                    game.update(() => updatedGame);
+                }
+                setTimeout(() => {
+                    currectAnswerer = null;
+                    if(!thisGame.isGuest)
+                        CarryNextRound();
+                }, 2000);
                 break;
+            case "end-game":
+                game.update(game => {
+                    return {
+                        ...game,
+                        room: {
+                            ...thisGame.room,
+                            gameDone: true,
+                            finalScore: eventData.score,
+                        }
+                    }
+                });
+                break;
+        }
+    }
+    function CarryNextRound() {
+        if(readiedUsers.length>0) {
+            const data = {
+                type: "make-questioner",
+            }
+            console.log(readiedUsers);
+            SendMessage(data, readiedUsers.shift());
+        } else {
+            SendMessageAll({
+                type: "end-game",
+                score: thisGame.room.score,
+            }, true);
         }
     }
     function CheckAnswer(title) {
@@ -205,7 +244,7 @@
             localPeerConnection.remoteSocketId = senderId;
             socket.on("newIceCandidate", (payload) => {
                 HandleNewCandidate(localPeerConnection, payload);
-            })
+            });
 
             let channel = await localPeerConnection.createDataChannel('signal');
             channel.onopen = OnOpenChannel;
@@ -216,14 +255,14 @@
             const answer = await localPeerConnection.createAnswer();
             localPeerConnection.setLocalDescription(answer);
             socket.emit("answer-to-sender", answer, senderId);
-        })
+        });
         socket.on("answer-to-sender", async (answer, answererId) => { // local-2
             let peerConnection =  thisGame.peerConnections[answererId];
             peerConnection.remoteSocketId = answererId;
             if(peerConnection) {
                 peerConnection.setRemoteDescription(answer);
             }
-        })
+        });
         socket.on("offer-description", async (payload) => { // local-1
             let localPeerConnection =  new RTCPeerConnection(iceConfiguration);
             PushPeerConnectionToArray(localPeerConnection, payload.targetUser.id);
@@ -264,16 +303,12 @@
             questionWasWroten = true;
         }, 400);
         
-        if(thisGame.isGuest) { // guest case
-            const hostId = thisGame.room.host.id;
-            let data = {
-                sender: thisGame.player,
-                type: "readied-to-question",
-            }
-            thisGame.signalChannels[hostId].send(JSON.stringify(data));
-        } else { // host case
-            UserIsReady(thisGame.player.id)
+        const hostId = thisGame.room.host.id;
+        let data = {
+            sender: thisGame.player,
+            type: "readied-to-question",
         }
+        SendMessage(data, hostId);
     }
     function UserIsReady(userId) {
         readiedUsers.push(userId);
@@ -281,10 +316,14 @@
             return readiedUsers.indexOf(user.id) < 0;
         }).length;
         if(remainingUsersNumber<=0) {
-            const data = {
-                type: "make-questioner"
-            }
-            SendMessage(data, readiedUsers.shift());
+            let updatedGame = {...thisGame};
+            if(!updatedGame.room.score)
+                updatedGame.room.score = {};
+            thisGame.room.users.forEach(user => {
+                updatedGame.room.score[user.id] = 0;
+            })
+            game.update(() => updatedGame);
+            CarryNextRound();
         }
     }
     function SendMessage(data, targetUserId) {
@@ -329,16 +368,27 @@
         const data = {
             type: "readied-to-play-music",
         }
-        console.log(e);
         SendMessage(data, thisGame.room.currentQuestion.author.id);
     }
-    let startRoundCallback;
-    function AddEventStartRound(callback) {
-        startRoundCallback = callback.bind({});
+    let startRound = {
+        callback: null,
+        AddEvent: (callback) => {
+            startRound.callback = callback.bind({});
+        },
+        Run: () => {
+            if(startRound.callback)
+                startRound.callback();
+        }
     }
-    function StartRound() {
-        if(startRoundCallback)
-            startRoundCallback();
+    let endRound = {
+        callback: null,
+        AddEvent: (callback) => {
+            endRound.callback = callback.bind({});
+        },
+        Run: () => {
+            if(endRound.callback)
+                endRound.callback();
+        }
     }
     function SubmitAnswer(title) {
         const data = {
@@ -361,11 +411,14 @@
                 <div class="box-wrapper">
                     <Questioner OnFinish={OnFinishQuestion}></Questioner>
                 </div>
+            {:else if thisGame.room.gameDone}
+                <ResultScreen users={thisGame.room.users} scores={thisGame.room.finalScore}/>
             {:else}
                 {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
                     <AnswerForm 
                         OnReady={OnReadyToPlayMusic} 
-                        AddEventStartRound={AddEventStartRound} 
+                        startRound={startRound}
+                        endRound={endRound}
                         SubmitAnswer={SubmitAnswer}
                     />
                 {:else}

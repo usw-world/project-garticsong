@@ -8,25 +8,31 @@
     import VideoPlayer from "./VideoPlayer.svelte";
 
     export let OnReady;
-    export let AddEventStartRound;
+    export let startRound;
+    export let endRound;
     export let SubmitAnswer;
     console.dir(thisGame.room.currentQuestion);
     let answerInput;
     let showingInput = false;
     onMount(() => {});
-    function StartEvent() {
+    function OnRoundStart() {
         showingInput = true;
         answerInput.focus();
+    }
+    function OnRoundEnd() {
+        setTimeout(() => {
+            showingInput = false;
+        }, 1000);
     }
     function OnSubmit(e){
         let value = e.target.answer.value;
         value = value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/ ]/gim, "");
-        console.log(value);
         if(value === thisGame.room.currentQuestion.title) {
             OnGuess(value);
         } else {
             OnInputError();
         }
+        e.target.answer.value = "";
     }
     function OnInputError() {
         answerInput.style.animation = "inputError 400ms ease 1 forwards";
@@ -48,8 +54,10 @@
         <VideoPlayer 
             OnReady={OnReady} 
             videoId={thisGame.room.currentQuestion.videoInfo.videoId} 
-            AddEventStartRound={AddEventStartRound}
-            StartEvent={StartEvent}
+            startRound={startRound}
+            endRound={endRound}
+            OnRoundStart={OnRoundStart}
+            OnRoundEnd={OnRoundEnd}
         />
         <div class="answer-request">정답을 입력하세요!</div>
         <input type="text" class="answer-answer" name="answer" bind:this={answerInput} 

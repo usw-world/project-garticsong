@@ -9,7 +9,7 @@
 
 <div class="answerer-board">
     <div class="question-title">
-        <span>정답은 바로</span><br>
+        <span>Good job!</span><br>
         {thisGame.room.lastQuestion.title}
     </div>
     <div class="answerer-info">
@@ -36,6 +36,7 @@
         padding-top: 4.9rem;
         box-sizing: border-box;
         text-align: center;
+        animation: fadeUpInAbs 400ms ease 1 forwards;
     }
     .question-title {
         font-size: 4rem;
@@ -93,5 +94,4 @@
     .answerer-info>.imagebox img {
         vertical-align: middle;
     }
-
 </style>
