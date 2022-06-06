@@ -93,7 +93,7 @@ module.exports = {
 	},
 	stats: {
 		warningsFilter: [
-			(warning) => {
+			prod ? () => {} : (warning) => {
 				const {moduleName, message} = warning;
 				return !(!moduleName.match(/.\/src\/GameRoom\/Questioner.svelte/) || !message.match(/Unused CSS selector/));
 			}
