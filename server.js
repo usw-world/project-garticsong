@@ -12,10 +12,8 @@ const { Server } = require("socket.io");
 const io = new Server(server, {
     cors: {
         origin: [
-            "http://125.190.241.9:2000",
-            "http://10.30.5.129:2000",
-            "http://192.168.219.101:2000",
             "http://localhost:2000",
+            "https://garticsong.herokuapp.com"
         ],
     }
 });
@@ -174,7 +172,8 @@ io.on("connection", socket => {
 app.use(cors());
 app.use(express.json());
 
-app.use('/static', express.static(path.join(__dirname, "public/build")));
+app.use("/", express.static(path.join(__dirname, "public/build")));
+app.use("/", express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "public/index.html"))
