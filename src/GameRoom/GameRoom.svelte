@@ -8,7 +8,8 @@
     import AnswerForm from './AnswerForm.svelte'
     import { onMount } from 'svelte';
     import { game, socket as mainSocket } from '../store';
-    // export let props;
+
+    export let props;
     let thisGame;
     game.subscribe(value => { thisGame = value });
 
@@ -16,7 +17,6 @@
     mainSocket.subscribe(value => { socket = value; });
 
     let isLoaded = false;
-    let isPlaying = false;
     let currectAnswerer = null;
     let readiedUsers = [];
     let bringers = [];
@@ -160,6 +160,7 @@
                 }
                 break;
             case "someone-guessed":
+                if(currectAnswerer) return;
                 game.update(game => {
                     return {
                         ...game,
@@ -196,6 +197,22 @@
                             finalScore: eventData.score,
                         }
                     }
+                });
+                break;
+            case "restart":
+                game.update(game => {
+                    return {
+                        ...game,
+                        room: {
+                            ...thisGame.room,
+                            currentQuestion: null,
+                            gameDone: false,
+                        }
+                    }
+                });
+                props.SetGameState(2, 400, null, () => {
+                    isLoaded = true;
+                    localQuestion = null;
                 });
                 break;
         }
@@ -287,7 +304,6 @@
         socket.emit("ready-to-connect", thisGame.room.roomId);
     });
 
-    let questionWasWroten = false;
     let localQuestion;
 
     const OnFinishQuestion = (questionInfo) => {
@@ -296,12 +312,8 @@
         game.update(game => {
             return {
                 ...game,
-                myQuestion: questionInfo,
             }
         });
-        setTimeout(() => {
-            questionWasWroten = true;
-        }, 400);
         
         const hostId = thisGame.room.host.id;
         let data = {
@@ -361,7 +373,6 @@
         });
         setTimeout(() => {
             isLoaded = true;
-            isPlaying = true;
         }, 400);
     }
     function OnReadyToPlayMusic(e) {
@@ -397,6 +408,9 @@
         };
         SendMessage(data, thisGame.room.currentQuestion.author.id);
     }
+    function RestartGame() {
+        SendMessageAll({ type: "restart" }, true);
+    }
 </script>
 
 <div class="room-wrap">
@@ -407,16 +421,20 @@
         {#if !isLoaded}
                 <LoadingComponent />
         {:else}
-            {#if !questionWasWroten}
+            {#if !localQuestion}
                 <div class="box-wrapper">
                     <Questioner OnFinish={OnFinishQuestion}></Questioner>
                 </div>
             {:else if thisGame.room.gameDone}
-                <ResultScreen users={thisGame.room.users} scores={thisGame.room.finalScore}/>
+                <ResultScreen
+                    users={thisGame.room.users}
+                    scores={thisGame.room.finalScore}
+                    RestartGame={RestartGame}
+                />
             {:else}
                 {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
                     <AnswerForm 
-                        OnReady={OnReadyToPlayMusic} 
+                        OnReady={OnReadyToPlayMusic}
                         startRound={startRound}
                         endRound={endRound}
                         SubmitAnswer={SubmitAnswer}

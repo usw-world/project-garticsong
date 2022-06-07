@@ -8,6 +8,7 @@
     import ScoreInterface from './ScoreInterface.svelte';
     export let users;
     export let scores;
+    export let RestartGame;
     let maxScore = Object.values(scores).reduce((a, b) => {
         return Math.max(a, b);
     });
@@ -16,6 +17,10 @@
     for(let i=0; i<scoreList.length; i++) {
         scoreList[i] = {...scoreList[i], score: scores[scoreList[i].id]}
     };
+
+    function OnClickRestart() {
+        RestartGame();
+    }
 </script>
 
 <div class="result-wrap">
@@ -26,7 +31,7 @@
     </div>
     {#if !thisGame.isGuest}
         <div class="button-wrap">
-            <button class="restart-button">
+            <button class="restart-button" on:click="{OnClickRestart}">
                 다시하기
             </button>
         </div>

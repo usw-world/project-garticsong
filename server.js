@@ -13,6 +13,7 @@ const io = new Server(server, {
     cors: {
         origin: [
             "http://localhost:2000",
+            "http://10.30.5.129:2000/",
             "https://garticsong.herokuapp.com"
         ],
     }
@@ -90,9 +91,9 @@ io.on("connection", socket => {
         io.to(socket.id).emit("result-check", !!rooms[`${roomId}`]);
     })
     socket.on("disconnect", (message) => {
-        if(message === "server namespace disconnect") return;
         console.log("someone left the game");
         RemoveUser(guestBook[socket.id], socket.id);
+        if(message === "server namespace disconnect") return;
         io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
     })
     socket.on("game-start", (room) => {

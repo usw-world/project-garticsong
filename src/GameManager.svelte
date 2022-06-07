@@ -20,8 +20,7 @@
         INTRO: 0,
         LOBBY: 1,
         ROOM: 2,
-        RESULT: 3,
-        NOT_EXIST_ROOM: 4,
+        NOT_EXIST_ROOM: 3,
     };
     let currentState = 0;
     
@@ -57,31 +56,33 @@
                 };
             });
             console.log(thisGame);
-            SetGameState(gameStateList.ROOM);
+            SetGameState(gameStateList.ROOM, null, null, () => {
+                isChangingScreen = false;
+            });
         });
         socket.on("disconnect", () => {
             console.log("client is free");
         })
     });
 
-    let isLoading = false;
+    let isChangingScreen = false;
     let SetGameState = (nextState, fadeTime, callfront, callback) => {
-        if(isLoading) return;
-        isLoading = true;
+        if(isChangingScreen) return;
+        isChangingScreen = true;
+
         if(callfront) callfront();
-        if(!fadeTime) fadeTime = 500;
+        if(!fadeTime) fadeTime = 400;
 
         if(nextState < 0 || nextState > Object.values(gameStateList).reduce((a, b) => Math.max(a, b))) {
             console.error("function:SetGameState received a unvaild value. \nnextState : ", nextState);
             return;
         }
         container.style.setProperty("animation", `fadeUpOut ${fadeTime}ms ease 1 forwards`);
-        console.dir(container.style.animation);
         setTimeout(() => {
             currentState = nextState;
             container.style.animation = `fadeUpIn ${fadeTime}ms ease 1 forwards`;
-            if(callback) callback();
-            isLoading = false;
+            if(callback) callback()
+            isChangingScreen = false;
         }, fadeTime);
     }
     let SetPlayerInformation = (info) => {
@@ -111,10 +112,8 @@
     {:else if currentState===gameStateList.LOBBY}
     <Lobby props={props}></Lobby>
     {:else if currentState===gameStateList.ROOM}
-    <GameRoom></GameRoom>
-    {:else if currentState===gameStateList.RESULT}
-    temporary
-    {:else if currentState===gameStateList.RESULT}
+    <GameRoom props={props}></GameRoom>
+    {:else if currentState===gameStateList.NOT_EXIST_ROOM}
     not exixt room
     {/if}
 </div>
