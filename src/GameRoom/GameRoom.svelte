@@ -20,6 +20,7 @@
     let currectAnswerer = null;
     let readiedUsers = [];
     let bringers = [];
+    let WATING_TIME_FOR_RESPONSE = 20000;
 
     const iceConfiguration = {'iceServers': [
         {
@@ -200,20 +201,44 @@
                 });
                 break;
             case "restart":
+                props.SetGameState(2, 400, null, () => {
+                    localQuestion = null;
+                    isLoaded = false;
+                    game.update(game => {
+                        return {
+                            ...game,
+                            room: {
+                                ...thisGame.room,
+                                currentQuestion: null,
+                                gameDone: false,
+                            }
+                        }
+                    });
+                    console.log(thisGame);
+                    SendMessage({type: "ready-to-restart"}, thisGame.room.host.id);
+                });
+                break;
+            case "ready-to-restart":
+                restartingQueue = restartingQueue.filter(user => {
+                    return user.id !== eventData.sender.id;
+                })
+                if(restartingQueue.length===0) {
+                    const data = {
+                        type: "restart-as-these",
+                        room: { ...thisGame.room },
+                    }
+                    if(restartTimeout) clearTimeout(restartTimeout);
+                    SendMessageAll(data, true);
+                }
+                break;
+            case "restart-as-these":
                 game.update(game => {
                     return {
                         ...game,
-                        room: {
-                            ...thisGame.room,
-                            currentQuestion: null,
-                            gameDone: false,
-                        }
-                    }
+                        room: {...eventData.room},
+                    };
                 });
-                props.SetGameState(2, 400, null, () => {
-                    isLoaded = true;
-                    localQuestion = null;
-                });
+                isLoaded = true;
                 break;
         }
     }
@@ -408,8 +433,25 @@
         };
         SendMessage(data, thisGame.room.currentQuestion.author.id);
     }
+    let restartingQueue;
+    let restartTimeout;
     function RestartGame() {
+        restartingQueue = [...thisGame.room.users];
         SendMessageAll({ type: "restart" }, true);
+        restartTimeout = setTimeout(() => {
+            let nextUsers = thisGame.room.users;
+            restartingQueue.forEach((item) => {
+                nextUsers = nextUsers.filter(() => nextUsers.indexOf(item.id)<0);
+            });
+            const data = {
+                type: "restart-as-these",
+                room: {
+                    ...thisGame.room,
+                    users: nextUsers,
+                },
+            }
+            SendMessageAll(data, true);
+        }, WATING_TIME_FOR_RESPONSE);
     }
 </script>
 
