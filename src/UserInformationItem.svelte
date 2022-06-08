@@ -7,7 +7,7 @@
     })
 </script>
 
-<li class="user-item {info.id===thisGame.player.id ? "me" : ""}">
+<li class="user-item {info.id===thisGame.player.id ? "me" : "other"}">
     <span class="image-box">
         {#if info.profileImage==0}
             <img src="../images/main-character.svg" alt="">
@@ -34,16 +34,15 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        border: .3rem solid #fff;
         box-sizing: border-box;
         border-radius: 0 4rem 4rem 0;
+        border: .3rem solid #fff;
     }
-    .me {
-	    border: .3rem solid transparent;
-        box-sizing: border-box;
-	    background: linear-gradient(#151515, #151515),
+    .user-item.me {
+	    background: linear-gradient(-45deg, rgba(21, 21, 21, 0.3), rgba(21, 21, 21, 0.75)),
 				linear-gradient(-45deg, var(--point-color-a), var(--point-color-b));
 	    background-clip: padding-box, border-box;
+        background-origin: border-box;
     }
     .image-box {
         display: inline-block;
