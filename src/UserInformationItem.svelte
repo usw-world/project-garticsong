@@ -1,9 +1,13 @@
 <script>
     export let info;
-    
+    import { game } from "./store";
+    let thisGame;
+    game.subscribe(value => {
+        thisGame = value;
+    })
 </script>
 
-<li class="user-item">
+<li class="user-item {info.id===thisGame.player.id ? "me" : ""}">
     <span class="image-box">
         {#if info.profileImage==0}
             <img src="../images/main-character.svg" alt="">
@@ -30,9 +34,16 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        box-sizing: border-box;
         border: .3rem solid #fff;
+        box-sizing: border-box;
         border-radius: 0 4rem 4rem 0;
+    }
+    .me {
+	    border: .3rem solid transparent;
+        box-sizing: border-box;
+	    background: linear-gradient(#151515, #151515),
+				linear-gradient(-45deg, var(--point-color-a), var(--point-color-b));
+	    background-clip: padding-box, border-box;
     }
     .image-box {
         display: inline-block;

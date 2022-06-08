@@ -130,6 +130,7 @@ io.on("connection", socket => {
             io.sockets.sockets.get(user.id).disconnect();
         })
         delete rooms[roomId];
+        console.log("this is room ", rooms);
     }
     const ConnectAsP2P = (roomid) => {
         let users = rooms[`${roomid}`].users;

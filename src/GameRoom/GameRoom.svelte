@@ -59,6 +59,7 @@
     };
     const PushDataChannelToArray = (channel, targetUserId) => {
         let nextChannels = thisGame.signalChannels;
+        channel.userId = targetUserId;
         nextChannels[targetUserId] = channel;
         game.update(game => {
             return {
@@ -240,6 +241,9 @@
                 });
                 isLoaded = true;
                 break;
+            case "leave-room":
+                console.log(sender.id);
+                break;
         }
     }
     function CarryNextRound() {
@@ -269,6 +273,20 @@
             type : "connect"
         }));
     }
+    function OnCloseChannel(e) {
+        let updatedUsers = [...thisGame.room.users];
+        updatedUsers = updatedUsers.filter(user => e.target.userId !== user.id);
+        game.update(game => {
+            return {
+                ...game,
+                room: {
+                    ...thisGame.room,
+                    users: updatedUsers
+                },
+            }
+        });
+        console.log(updatedUsers);
+    }
     onMount(() => {
         game.update(game => {
             return {
@@ -290,7 +308,7 @@
 
             let channel = await localPeerConnection.createDataChannel('signal');
             channel.onopen = OnOpenChannel;
-            channel.onclose = (e) => { console.log("Channel is Closed", e) };
+            channel.onclose = OnCloseChannel;
             PushDataChannelToArray(channel, senderId);
 
             localPeerConnection.setRemoteDescription(offer);
@@ -316,7 +334,7 @@
 
             let channel = await localPeerConnection.createDataChannel('signal');
             channel.onopen = OnOpenChannel;
-            channel.onclose = (e) => { console.log("Channel is Closed", e) };
+            channel.onclose = OnCloseChannel;
             PushDataChannelToArray(channel, payload.targetUser.id);
 
             const offer = await localPeerConnection.createOffer();
