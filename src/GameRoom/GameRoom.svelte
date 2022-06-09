@@ -146,7 +146,6 @@
                         ...game,
                         room: {
                             ...thisGame.room,
-                            roundStarted: true,
                         }
                     }
                 })
@@ -241,9 +240,6 @@
                 });
                 isLoaded = true;
                 break;
-            case "leave-room":
-                console.log(sender.id);
-                break;
         }
     }
     function CarryNextRound() {
@@ -285,9 +281,9 @@
                 },
             }
         });
-        console.log(updatedUsers);
     }
     onMount(() => {
+        window.onbeforeunload = () => "페이지를 벗어나려고 해요. 의도대로 인가요?";
         game.update(game => {
             return {
                 ...game,

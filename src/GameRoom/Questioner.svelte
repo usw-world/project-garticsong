@@ -179,7 +179,7 @@
     .wroten-wrap {
         transition: height 400ms ease;
         height: 0;
-        padding: 10rem 3rem 0;
+        padding: 10rem 8rem 0;
         color: #fff;
         font-size: 2rem;
         font-weight: 700;
@@ -188,6 +188,7 @@
         overflow: hidden;
     }
     .wroten-list {
+        width: 100%;
         height: auto;
         display: inline-flex;
         flex-direction: column;

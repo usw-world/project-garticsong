@@ -8,6 +8,9 @@
 </script>
 
 <li class="user-item {info.id===thisGame.player.id ? "me" : "other"}">
+    {#if info.id === thisGame.room.host.id}
+        <img class="hosts-crown" src="../images/crown.svg" alt="">
+    {/if}
     <span class="image-box">
         {#if info.profileImage==0}
             <img src="../images/main-character.svg" alt="">
@@ -60,5 +63,10 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .hosts-crown {
+        position: absolute;
+        top: 26%; right: 10%;
+        width: 17%;
     }
 </style>

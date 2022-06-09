@@ -23,22 +23,16 @@ let guestBook = {};
 let rooms = {};
 let watingRooms = {};
 let connectingRooms = {};
-const RoomGenerator = (id, hostUser) => {
-    let host = {
-        id, 
-        ...hostUser,
-    };
-    return {
-        roomId : `room${id}`,
-        host,
-        users : [host],
-    }
-}
 
 io.on("connection", socket => {
     socket.on("create-room", (payload) => {
+        let host = {
+            id: socket.id, 
+            ...payload.hostInfo,
+        };
         console.log("created room :\n ", payload);
-        rooms[`room${socket.id}`] = RoomGenerator(socket.id, payload.hostInfo);
+        rooms[`room${socket.id}`] = RoomGenerator(socket.id, host);
+        PushUser(`room${socket.id}`, host, socket.id);
         socket.join(`room${socket.id}`);
         io.to(socket.id).emit("set-room", rooms[`room${socket.id}`]);
     })
@@ -92,9 +86,10 @@ io.on("connection", socket => {
     })
     socket.on("disconnect", (message) => {
         console.log("someone left the game");
+        if(message !== "server namespace disconnect") {
+            io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
+        }
         RemoveUser(guestBook[socket.id], socket.id);
-        if(message === "server namespace disconnect") return;
-        io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
     })
     socket.on("game-start", (room) => {
         console.log("this is room that I received", room);
@@ -123,6 +118,13 @@ io.on("connection", socket => {
             ReleaseRoom(room.roomId);
         }
     })
+    const RoomGenerator = (id, host) => {
+        return {
+            roomId : `room${id}`,
+            host,
+            users : [],
+        }
+    }
     const ReleaseRoom = (roomId) => {
         rooms[roomId].users.forEach(user => {
             console.log(user.id);
@@ -156,6 +158,7 @@ io.on("connection", socket => {
     }
     const RemoveUser = (targetRoomId, targetUserId) => {
         if(targetRoomId) {
+            delete guestBook[targetUserId];
             let nextRoom = {
                 ...rooms[targetRoomId],
                 users : rooms[targetRoomId].users.filter(user => {

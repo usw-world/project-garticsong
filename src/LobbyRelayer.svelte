@@ -61,6 +61,7 @@
             })
         });
         socket.on("someone-leaves", (userId) => {
+            console.log(userId);
             props.RemoveUser(userId);
         });
     })

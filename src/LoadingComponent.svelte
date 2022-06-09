@@ -5,7 +5,7 @@
         <div class="loading-imagebox">
             <img src="/images/loading.svg" alt="">
         </div>
-        <div class="loading-text">Now loading...</div>
+        <div class="loading-text">불러오는 중</div>
     </div>
 </div>
 

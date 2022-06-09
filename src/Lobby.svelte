@@ -10,7 +10,6 @@
 
     export let props;
     let inviteLink = "https://garticsong.herokuapp.com/?jr=";
-    let inviteLinkElmt;
 
     function AddUser(_id/* string */, _name/* string */, _profileImage/* number */) {
         console.log(thisGame.room.users);
@@ -42,14 +41,17 @@
         }
     }
     const SetInviteLink = (nextLink) => {
-        inviteLink = `https://garticsong.herokuapp.com/?jr=${nextLink}`;
+        const url = new URL(window.location);
+        console.log(url);
+        inviteLink = `${url.href}?jr=${nextLink}`;
+        // inviteLink = `https://garticsong.herokuapp.com/?jr=${nextLink}`;
     }
 </script>
 
 <div class="lobby-wrap">
     <div class="lobby-top">
         <div class="invite-link">
-            <span class="link" bind:this={inviteLinkElmt}>{inviteLink}</span>
+            <span class="link">{inviteLink}</span>
             <button class="link-copy" on:click="{OnCopyButton}">copy</button>
         </div>
     </div>
