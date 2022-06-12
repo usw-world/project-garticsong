@@ -1,4 +1,5 @@
 <script>
+    import { PlayAudio } from "../store";
     import { onMount } from "svelte";
     export let OnFinish;
 
@@ -8,6 +9,7 @@
     let answerObj = {};
     
     onMount(() => {
+        PlayAudio("/soundEffects/write-question.wav");
         wrapper = document.querySelector(".question-wrap");
         answerInput.focus();
     });

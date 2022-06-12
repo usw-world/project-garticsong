@@ -1,6 +1,6 @@
 <script>
     import { onMount } from 'svelte';
-    import { game } from '../store';
+    import { PlayAudio, game } from '../store';
     let thisGame;
     game.subscribe(value => {
         thisGame = value;
@@ -9,6 +9,11 @@
     export let users;
     export let scores;
     export let RestartGame;
+
+    onMount(() => {
+        PlayAudio("/soundEffects/result-screen.wav");
+    })
+
     let maxScore = Object.values(scores).reduce((a, b) => {
         return Math.max(a, b);
     });

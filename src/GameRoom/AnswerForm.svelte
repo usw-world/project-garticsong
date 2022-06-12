@@ -1,5 +1,5 @@
 <script>
-    import { game } from "../store";
+    import { PlayAudio, game } from "../store";
     let thisGame;
     game.subscribe(value => {
         thisGame = value;
@@ -14,7 +14,9 @@
     console.dir(thisGame.room.currentQuestion);
     let answerInput;
     let showingInput = false;
-    onMount(() => {});
+    onMount(() => {
+        PlayAudio("/soundEffects/start-question.wav");
+    });
     function OnRoundStart() {
         showingInput = true;
         answerInput.focus();
@@ -67,7 +69,10 @@
         >
         <input id="answer-submit-button" class="answer-button" type="submit" value="확인">
     </div>
-    <div class="answer-description">{thisGame.room.currentQuestion.description}</div>
+    <div class="answer-description">
+        <div class="author">{thisGame.room.currentQuestion.author.name}의 문제</div>
+        {thisGame.room.currentQuestion.description}
+    </div>
 </form>
 
 <style>
@@ -101,6 +106,21 @@
         line-height: 1.4;
         box-sizing: border-box;
         overflow: hidden;
+    }
+    .answer-description>.author {
+        font-weight: 900;
+        font-size: 1.9rem;
+        margin-bottom: 1.2rem;
+    }
+    .answer-description>.author::after {
+        content: "";
+        margin: 0 auto;
+        display: block;
+        width: 2em;
+        height: 0.5rem;
+        margin-top: 1.2rem;
+        background-color: rgba(255, 255, 255, 1);
+        border-radius: .25rem;
     }
     .answer-request{
         margin-bottom: 1.8rem;

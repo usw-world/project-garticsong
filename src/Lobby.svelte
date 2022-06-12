@@ -4,12 +4,18 @@
     import LobbyGuide from "./LobbyGuide.svelte";
     import LobbyRelayer from "./LobbyRelayer.svelte";
     import UserInfo from "./UserInformation.svelte";
-    import { game } from "./store";
+    import { game, PlayAudio } from "./store";
     let thisGame;
     game.subscribe(game => { thisGame = game });
 
     export let props;
     let inviteLink = "https://garticsong.herokuapp.com/?jr=";
+
+    onMount(() => {
+        setTimeout(() => {
+            PlayAudio("/soundEffects/door-bell.wav");
+        }, 300);
+    })
 
     function AddUser(_id/* string */, _name/* string */, _profileImage/* number */) {
         console.log(thisGame.room.users);
@@ -43,7 +49,7 @@
     const SetInviteLink = (nextLink) => {
         const url = new URL(window.location);
         console.log(url);
-        inviteLink = `${url.href}?jr=${nextLink}`;
+        inviteLink = `${url.origin}?jr=${nextLink}`;
         // inviteLink = `https://garticsong.herokuapp.com/?jr=${nextLink}`;
     }
 </script>

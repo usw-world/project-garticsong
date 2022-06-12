@@ -33,6 +33,7 @@
         width: 100%;
         margin: 0.5rem 0;
         padding: 1.1rem;
+        padding-right: 5rem;
         display: flex;
         flex-direction: row;
         justify-content: center;
@@ -66,7 +67,7 @@
     }
     .hosts-crown {
         position: absolute;
-        top: 26%; right: 10%;
-        width: 17%;
+        top: 26%; right: 6%;
+        width: 15%;
     }
 </style>

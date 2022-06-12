@@ -1,12 +1,24 @@
 <script>
-    import { game } from '../store';
+    import { onMount } from 'svelte';
+    import { PlayAudio, game } from '../store';
     let thisGame;
     game.subscribe(value => {
         thisGame = value;
     })
     export let user;
+
+    onMount(() => {
+        PlayAudio('/soundEffects/guess.wav');
+    });
 </script>
 
+{#if !user}
+<div class="answerer-board">
+    <div class="answerer-name">
+        문제 내던 사람이 사라졌어요!
+    </div>
+</div>
+{:else}
 <div class="answerer-board">
     <div class="question-title">
         <span>Good job!</span><br>
@@ -24,6 +36,7 @@
         </div>
     </div>
 </div>
+{/if}
 
 <style>
     .answerer-board {

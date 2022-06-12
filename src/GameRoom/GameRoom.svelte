@@ -6,6 +6,7 @@
     import ResultScreen from './ResultScreen.svelte';
     import CurrectAnswerer from "./CurrectAnswerer.svelte";
     import AnswerForm from './AnswerForm.svelte'
+    import QuestionerExitAlert from './QuestionerExitAlert.svelte';
     import { onMount } from 'svelte';
     import { game, socket as mainSocket } from '../store';
 
@@ -18,7 +19,7 @@
 
     let isLoaded = false;
     let currectAnswerer = null;
-    let readiedUsers = [];
+    let isWatingNextRound = false;
     let bringers = [];
     let WATING_TIME_FOR_RESPONSE = 20000;
 
@@ -118,11 +119,10 @@
                 UserIsReady(eventData.sender.id);
                 break;
             case "set-question":
-                console.log(eventData);
                 ReadyToAnswer(eventData.question);
                 break;
             case "make-questioner":
-                // console.log("Receive the message to make me questioner", eventData);
+                console.log("Now, I'm a questioner!");
                 bringers = [...thisGame.room.users];
                 SendMessageAll({
                     type: "set-question",
@@ -146,6 +146,7 @@
                         ...game,
                         room: {
                             ...thisGame.room,
+                            roundIsRunning: true,
                         }
                     }
                 })
@@ -162,6 +163,8 @@
                 break;
             case "someone-guessed":
                 if(currectAnswerer) return;
+                isWatingNextRound = true;
+                currectAnswerer = eventData.answerer;
                 game.update(game => {
                     return {
                         ...game,
@@ -171,9 +174,9 @@
                         }
                     }
                 })
-                currectAnswerer = eventData.answerer;
                 endRound.Run();
 
+                console.log(thisGame);
                 if(!thisGame.isGuest) {
                     let updatedGame = {...thisGame};
                     let questionerPoint = thisGame.room.setting && thisGame.room.setting.questionerPoint || 100;
@@ -183,7 +186,6 @@
                     game.update(() => updatedGame);
                 }
                 setTimeout(() => {
-                    currectAnswerer = null;
                     if(!thisGame.isGuest)
                         CarryNextRound();
                 }, 2000);
@@ -240,15 +242,41 @@
                 });
                 isLoaded = true;
                 break;
+            case "appoint-subhost":
+                AppointSubHost(eventData.nextSubhost);
+                break;
+            case "check-question-ready":
+                const hostId = thisGame.room.host.id;
+                if(!!localQuestion) SendMessage({ type: "readied-to-question" }, hostId);
+                break;
+            case "questioner-left":
+                isWatingNextRound = true;
+                endRound.Run();
+                break;
+            case "sync-room":
+                game.update(game => {
+                    return {
+                        ...game,
+                        room: eventData.updatedRoom,
+                    }
+                });
+                console.log(thisGame);
+                break;
         }
     }
     function CarryNextRound() {
+        let readiedUsers = thisGame.room.readiedUsers;
+        console.log(readiedUsers);
         if(readiedUsers.length>0) {
             const data = {
                 type: "make-questioner",
             }
-            console.log(readiedUsers);
-            SendMessage(data, readiedUsers.shift());
+            let nextQuestioner = readiedUsers.shift()
+            let updatedRoom = {...thisGame.room};
+            updatedRoom.readiedUsers = [...readiedUsers];
+            SendMessageAll({type: "sync-room", updatedRoom}, true);
+            SendMessage(data, nextQuestioner);
+            
         } else {
             SendMessageAll({
                 type: "end-game",
@@ -269,18 +297,57 @@
             type : "connect"
         }));
     }
-    function OnCloseChannel(e) {
+    function OnCloseChannel(e) { 
+        // first, room is will updated. and will share room other users.
+        let leftUserId = e.target.userId;
         let updatedUsers = [...thisGame.room.users];
-        updatedUsers = updatedUsers.filter(user => e.target.userId !== user.id);
+        let nextHost = thisGame.room.host;
+        let nextSubhost;
+        let nextPeerConnectionList = {...thisGame.peerConnections};
+        let nextSignalChennlList = {...thisGame.signalChannels};
+
+        updatedUsers = updatedUsers.filter(user => leftUserId !== user.id);
+        nextSubhost = updatedUsers.find(user => user.id !== thisGame.player.id);
+        delete nextPeerConnectionList[leftUserId];
+        delete nextSignalChennlList[leftUserId];
+        if(leftUserId === thisGame.room.host.id) // if left user is host
+            nextHost = {...thisGame.room.subHost};
+
+        console.log(nextHost.id===thisGame.player.id);
+        console.log(nextHost.id);
+        console.log(thisGame.player.id);
         game.update(game => {
             return {
                 ...game,
+                peerConnections: nextPeerConnectionList,
+                signalChannels: nextSignalChennlList,
                 room: {
                     ...thisGame.room,
-                    users: updatedUsers
+                    users: updatedUsers,
+                    host: nextHost,
+                    readiedUsers: thisGame.room.readiedUsers.filter(userId => userId!==leftUserId),
+                    subHost: nextSubhost,
+                    // << delegate host
                 },
+                isGuest: nextHost.id===thisGame.player.id ? false : true, 
             }
         });
+        if(!thisGame.isGuest) {
+            SendMessageAll({type: "sync-room", updatedRoom: thisGame.room}, true);
+        }
+        
+        if(!thisGame.room.roundIsRunning) {
+            SendMessageAll({ type: "check-question-ready" }, true);
+        } else if(!thisGame.isGuest) {
+            const question = thisGame.room.currentQuestion;
+            if(!isWatingNextRound && leftUserId===question.author.id) { // questioner left
+                console.log("출제자 아웃아웃");
+                SendMessageAll({ type: "questioner-left" }, true);
+                setTimeout(() => {
+                    CarryNextRound();
+                }, 2000);
+            }
+        }
     }
     onMount(() => {
         window.onbeforeunload = () => "페이지를 벗어나려고 해요. 의도대로 인가요?";
@@ -289,9 +356,14 @@
                 ...game,
                 peerConnections : {},
                 signalChannels : {},
-                connectedUsers : []
+                connectedUsers : [],
+                room: {
+                    ...thisGame.room,
+                    readiedUsers: [],
+                },
             };
         });
+        console.log()
         socket.on("offer-answer", async (offer, senderId) => { // remote-1
             let localPeerConnection =  new RTCPeerConnection(iceConfiguration);
             PushPeerConnectionToArray(localPeerConnection, senderId);
@@ -339,41 +411,60 @@
         })
         socket.on("ready-to-start", () => {
             isLoaded = true;
+            if(!thisGame.isGuest) {
+                FindNewSubHost();
+            }
         })
         socket.emit("ready-to-connect", thisGame.room.roomId);
     });
 
     let localQuestion;
 
-    const OnFinishQuestion = (questionInfo) => {
-        isLoaded = false;
-        localQuestion = {...questionInfo};
+    const FindNewSubHost = () => {
+        let nextSubhost = thisGame.room.users.find(user => user.id !== thisGame.player.id);
+        const data = {
+            type: "appoint-subhost",
+            nextSubhost,
+        }
+        SendMessageAll(data, true);
+    }
+    const AppointSubHost = (targetUser) => {
         game.update(game => {
             return {
                 ...game,
+                room: {
+                    ...game.room,
+                    subHost: targetUser
+                }
             }
-        });
+        })
+        console.log("sub host was updated : ", thisGame.room);
+    }
+    const OnFinishQuestion = (questionInfo) => {
+        isLoaded = false;
+        localQuestion = {...questionInfo};
         
         const hostId = thisGame.room.host.id;
-        let data = {
-            sender: thisGame.player,
-            type: "readied-to-question",
-        }
+        let data = { type: "readied-to-question" }
         SendMessage(data, hostId);
     }
     function UserIsReady(userId) {
-        readiedUsers.push(userId);
+        let readiedUsers = thisGame.room.readiedUsers;
+        if(readiedUsers.indexOf(userId) < 0) {
+            readiedUsers.push(userId);
+        }
         let remainingUsersNumber = thisGame.room.users.filter(user => {
             return readiedUsers.indexOf(user.id) < 0;
         }).length;
         if(remainingUsersNumber<=0) {
-            let updatedGame = {...thisGame};
-            if(!updatedGame.room.score)
-                updatedGame.room.score = {};
+            let updatedRoom = {...thisGame.room};
+            if(!updatedRoom.score)
+                updatedRoom.score = {};
             thisGame.room.users.forEach(user => {
-                updatedGame.room.score[user.id] = 0;
-            })
-            game.update(() => updatedGame);
+                updatedRoom.score[user.id] = 0;
+            });
+            updatedRoom.readiedUsers = readiedUsers;
+            SendMessageAll({type: "sync-room", updatedRoom}, true);
             CarryNextRound();
         }
     }
@@ -401,6 +492,8 @@
         })
     }
     function ReadyToAnswer(question) {
+        isWatingNextRound = false;
+        currectAnswerer = null;
         game.update(game => {
             return {
                 ...game,
@@ -487,6 +580,12 @@
                     scores={thisGame.room.finalScore}
                     RestartGame={RestartGame}
                 />
+            {:else if isWatingNextRound}
+                {#if !currectAnswerer}
+                    <QuestionerExitAlert />
+                {:else}
+                    <CurrectAnswerer user={currectAnswerer}/>
+                {/if}
             {:else}
                 {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
                     <AnswerForm 
@@ -498,9 +597,6 @@
                 {:else}
                     <QuestionUserInterface />
                 {/if}
-            {/if}
-            {#if currectAnswerer}
-                <CurrectAnswerer user={currectAnswerer}/>
             {/if}
         {/if}
     </div>
