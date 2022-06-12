@@ -11,6 +11,7 @@
     export let startRound;
     export let endRound;
     export let SubmitAnswer;
+    export let showHint;
     console.dir(thisGame.room.currentQuestion);
     let answerInput;
     let showingInput = false;
@@ -45,6 +46,7 @@
     function OnGuess(title) {
         SubmitAnswer(title);
     }
+
 </script>
 
 <form class="question-form" on:submit|preventDefault = {OnSubmit}>
@@ -73,6 +75,11 @@
         <div class="author">{thisGame.room.currentQuestion.author.name}의 문제</div>
         {thisGame.room.currentQuestion.description}
     </div>
+    {#if {showHint} != true}
+        <div class="hint-submit-answer">호스트가 힌트를 제출할 때 까지 기다려요!<br /></div>
+    {:else if showHint == true}
+        <div class="hint-submit-answer">힌트! <br> {thisGame.room.currentQuestion.hint}</div>
+    {/if}
 </form>
 
 <style>
