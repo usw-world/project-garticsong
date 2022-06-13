@@ -13,6 +13,7 @@
     import Lobby from './Lobby.svelte';
     import GameRoom from './GameRoom/GameRoom.svelte';
     import Intro from './Intro.svelte';
+    import IEBlocker from './IEBlocker.svelte';
 
     import { module as cookieManager } from './cookieManager';
 
@@ -45,7 +46,13 @@
     })();
 
     const COOKIE_EXPIRES_TIME = new Date(Date.now() + 900000) // 15minute
+    let isIE = false;
     onMount(() => {
+        let agent = navigator.userAgent.toLowerCase();
+        if((navigator.appName == 'Netscape' && agent.indexOf('trident') != -1) || (agent.indexOf("msie") != -1)) {
+            isIE = true;
+        }
+
         socket.on("game-start", (updatedRoom) => {
             console.log(updatedRoom);
             game.update(game => {
@@ -106,6 +113,9 @@
     }
 </script>
 
+{#if isIE}
+    <IEBlocker />;
+{:else}
 <div class="container" bind:this="{container}">
     {#if currentState===gameStateList.INTRO}
     <Intro props={props}></Intro>
@@ -117,5 +127,6 @@
     not exixt room
     {/if}
 </div>
+{/if}
 
 <style></style>

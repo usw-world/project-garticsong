@@ -13,8 +13,8 @@ const io = new Server(server, {
     cors: {
         origin: [
             "http://localhost:2000",
-            "http://10.30.5.129:2000/",
-            "https://garticsong.herokuapp.com"
+            "http://10.30.5.129:2000",
+            "https://garticsong.herokuapp.com",
         ],
     }
 });
