@@ -18,6 +18,10 @@
 	font-weight: 900;
 	src: url("../public/fonts/NanumSquareRoundEB.ttf");
 }
+@font-face {
+	font-family: anton;
+	src: url("../public/fonts/Anton-Regular.ttf");
+}
 :root {
 	font-size: 10px;
 	font-family: nsr;

@@ -13,10 +13,13 @@
         }
         items[index].classList.add("selected");
     }
+    function OnClickGuide() {
+        GuideMoveTo((guideNumber + 1) % 6);
+    }
 </script>
 
 <div class="guide-wrap">
-    <ul class="guide-list" bind:this="{guideList}">
+    <ul class="guide-list" bind:this="{guideList}" on:click="{() => { OnClickGuide(); }}">
         <li class="guide-item">
             <span class="svg-wrap">
                 <GuideImage index={0}></GuideImage>
@@ -82,6 +85,7 @@
         height: 100%;
         overflow: hidden;
         box-sizing: border-box;
+        cursor: pointer;
     }
     .guide-list {
         transition: left 400ms ease;

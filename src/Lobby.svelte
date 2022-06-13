@@ -4,8 +4,10 @@
     import LobbyGuide from "./LobbyGuide.svelte";
     import LobbyRelayer from "./LobbyRelayer.svelte";
     import UserInfo from "./UserInformation.svelte";
+    import SettingInterface from "./SettingInterface.svelte";
     import { game, PlayAudio } from "./store";
     let thisGame;
+    let showingSetting = true/* false */;
     game.subscribe(game => { thisGame = game });
 
     export let props;
@@ -66,7 +68,11 @@
             <UserInfo users={thisGame.room.users}></UserInfo>
         </div>
         <div class="lobby-center">
-            <LobbyGuide></LobbyGuide>
+            {#if showingSetting && !thisGame.isGuest}
+                <SettingInterface />
+            {:else}
+                <LobbyGuide />
+            {/if}
         </div>
         <div class="lobby-right">
             <div class="logo-area">
@@ -79,12 +85,37 @@
                     AddUser,
                     RemoveUser,
                 }}></LobbyRelayer>
+                {#if !thisGame.isGuest}
+                    <div class="setting-wrap">
+                        <button class="setting-button" on:click="{() => {
+                            showingSetting = !showingSetting;
+                        }}">SETTING</button>
+                    </div>
+                {/if}
             </div>
         </div>
     </div>
 </div>
 
 <style>
+    .setting-wrap {
+        display: flex;
+        height: 10rem;
+        align-items: center;
+        justify-content: center;
+    }
+    .setting-button {
+        height: 6rem;
+        width: 15rem;
+        color: var(--point-color-b);
+        font-family: anton;
+        font-size: 2.2rem;
+        font-weight: 400;
+        border-color: var(--point-color-b);
+        background-color: #323232;
+        border-radius: 3rem;
+        cursor: pointer;
+    }
     .lobby-wrap {
         display: inline-block;
         max-width: 1200px;
