@@ -105,7 +105,7 @@
     }
     .guide-item>.svg-wrap {
         display: block;
-        padding: 45px 0;
+        padding: 4.5rem 0;
         box-sizing: border-box;
     }
     .pager-wrap {

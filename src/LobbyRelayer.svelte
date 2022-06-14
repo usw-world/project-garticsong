@@ -56,9 +56,13 @@
             game.update(game => {
                 return {
                     ...game,
-                    room : updatedRoom,
+                    room : {
+                        ...thisGame.room,
+                        users: [...thisGame.room.users, user],
+                    }
                 }
             })
+            console.log(thisGame);
         });
         socket.on("someone-leaves", (userId) => {
             console.log(userId);
@@ -146,10 +150,15 @@
         //     socket.emit("answer", answerInfo);
         // })
         socket.on("set-room", (nextRoom) => {
+            console.log(thisGame.room);
+            console.log(nextRoom);
             game.update(game => {
                 return {
                     ...game,
-                    room: nextRoom
+                    room: {
+                        ...thisGame.room,
+                        ...nextRoom,
+                    }
                 }
             });
             props.SetInviteLink(thisGame.room.roomId);

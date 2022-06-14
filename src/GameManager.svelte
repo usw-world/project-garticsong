@@ -54,9 +54,8 @@
         }
 
         socket.on("game-start", (updatedRoom) => {
-            console.log(updatedRoom);
+            console.log(thisGame);
             game.update(game => {
-                console.log(game)
                 return {
                     ...game,
                     room : {...updatedRoom},

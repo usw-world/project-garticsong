@@ -341,7 +341,6 @@
         } else if(!thisGame.isGuest) {
             const question = thisGame.room.currentQuestion;
             if(!isWatingNextRound && leftUserId===question.author.id) { // questioner left
-                console.log("출제자 아웃아웃");
                 SendMessageAll({ type: "questioner-left" }, true);
                 setTimeout(() => {
                     CarryNextRound();
@@ -363,7 +362,6 @@
                 },
             };
         });
-        console.log()
         socket.on("offer-answer", async (offer, senderId) => { // remote-1
             let localPeerConnection =  new RTCPeerConnection(iceConfiguration);
             PushPeerConnectionToArray(localPeerConnection, senderId);

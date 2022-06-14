@@ -95,7 +95,9 @@ module.exports = {
 		warningsFilter: [
 			prod ? () => {} : (warning) => {
 				const {moduleName, message} = warning;
-				return !(!moduleName.match(/.\/src\/GameRoom\/Questioner.svelte/) || !message.match(/Unused CSS selector/));
+				let check = !(!moduleName.match(/.\/src\/GameRoom\/Questioner.svelte/) || !message.match(/Unused CSS selector/));
+							// || !(!moduleName.match(/.\/src\/GameRoom\/Timer.svelte/) || !message.match(/Unused CSS selector/));
+				return check;
 			}
 		]
 	}

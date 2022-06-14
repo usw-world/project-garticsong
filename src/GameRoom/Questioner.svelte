@@ -1,6 +1,7 @@
 <script>
     import { PlayAudio } from "../store";
     import { onMount } from "svelte";
+    import Timer from "./Timer.svelte";
     export let OnFinish;
 
     let questionOrder = 0;
@@ -151,6 +152,7 @@
 </script>
 
 <div class="question-wrap">
+    <Timer />
     <div class="wroten-wrap" bind:this={wrotenWrapper}>
         <ul class="wroten-list" bind:this={wrotenList}>
             <!-- <li class="wroten-item"></li> -->
