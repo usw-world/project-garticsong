@@ -535,12 +535,12 @@
                     MessageEventHandler(data);
         })
     }
-    let ResetTimer = () => { console.log("usoock") };
+    let ResetTimer;
     function ReadyToAnswer(question) {
         isWatingNextRound = false;
         questionTimeout = false;
         currectAnswerer = null;
-        ResetTimer();
+        ResetTimer && ResetTimer();
         game.update(game => {
             return {
                 ...game,

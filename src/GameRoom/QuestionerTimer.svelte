@@ -7,6 +7,7 @@
     export let ResetTimer;
     let currentTime;
     let currentWidth; 
+    let timerRunning = true;
     
     if(props) {
         props.interval = props.interval || 1000;
@@ -19,21 +20,26 @@
     let repeater;
     onMount(() => {
         ResetTimer = () => {
-            clearInterval(repeater);
+            // clearInterval(repeater);
             currentTime = props.startTime;
-            repeater = TimerInterval();
+            timerRunning = true;
+            // repeater = TimerInterval();
         };
         repeater = TimerInterval();
     })
     onDestroy(() => {
+        console.log("destroy");
         clearInterval(repeater);
         currentTime = props.startTime;
     });
     function TimerInterval() {
         return setInterval(() => {
+            if(!timerRunning) return;
+            // console.log('drill', currentTime);
             TimerRender();
             if(currentTime + props.interval >= props.time) {
-                clearInterval(repeater);
+                // console.log("egg", currentTime);
+                timerRunning = false;
                 setTimeout(() => {
                     TimerRender()
                     props.OnTimeout && props.OnTimeout();
