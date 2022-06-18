@@ -6,6 +6,13 @@
     let currentImageNumber = Math.floor(Math.random() * 6);
     let MAX_NUMBER = 5;
 
+    new Audio("/soundEffects/door-bell.wav");
+    new Audio("/soundEffects/guess.wav");
+    new Audio("/soundEffects/hint.wav");
+    new Audio("/soundEffects/result-screen.wav");
+    new Audio("/soundEffects/start-question.wav");
+    new Audio("/soundEffects/write-question.wav");
+
     const IncreaseNumber = () => {
         currentImageNumber = (currentImageNumber + 1) % (MAX_NUMBER+1)
     }
