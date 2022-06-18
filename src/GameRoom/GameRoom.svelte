@@ -634,7 +634,7 @@
 
 <div class="room-wrap">
     <div class="room-header">
-        
+        <img src="/images/logo.svg" alt="">
     </div>
     <div class="room-left">
         <UserInfo users={thisGame.room.users}></UserInfo>
@@ -700,6 +700,17 @@
 </div>
 
 <style>
+    .room-header {
+        position: absolute;
+        top: -3rem;
+        width: 100%;
+        text-align: right;
+        
+    }
+    .room-header>img {
+        width: 15rem;
+        opacity: .8;
+    }
     .room-footer {
         position: absolute;
         left: 0; bottom: -7.2rem;
