@@ -1,21 +1,14 @@
 <script>
     export let user;
     export let maxScore;
+    import UserImageBox from '../UserImageBox.svelte';
     let height = user.score / maxScore * 30;
 </script>
 
 <div class="personal-score">
     <div class="image-wrap">
         <span class="image-box">
-            {#if user.profileImage==0}
-                <img src="../images/main-character.svg" alt="">
-            {:else if user.profileImage==1}
-                <img src="../images/main-character.svg" alt="" style="transform: rotate(90deg);">
-            {:else if user.profileImage==2}
-                <img src="../images/main-character.svg" alt="" style="transform: rotate(180deg);">
-            {:else if user.profileImage==3}
-                <img src="../images/main-character.svg" alt="" style="transform: rotate(270deg);">
-            {/if}
+            <UserImageBox imageNumber={user.profileImage} width={"100%"}; height={"100%"} />
         </span>
     </div>
     <div class="graph" style="
@@ -41,10 +34,11 @@
     }
     .image-box {
         display: inline-block;
-        width: 88%;
-    }
-    .image-box>img {
-        width: 100%;
+        width: 10rem;
+        height: 10rem;
+        border-radius: 50%;
+        overflow: hidden;
+        border: .3rem solid #fff;
     }
     .graph {
         display: inline-block;

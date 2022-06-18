@@ -19,8 +19,15 @@
     });
     console.log(maxScore);
     let scoreList = [...users];
+    // let bestPerformer = scoreList[0];
+    // let bestScore = 0;
     for(let i=0; i<scoreList.length; i++) {
-        scoreList[i] = {...scoreList[i], score: scores[scoreList[i].id]}
+        // let score = scores[scoreList[i].id];
+        // if(bestScore < score) {
+        //     bestPerformer = scoreList[i];
+        //     bestScore = score;
+        // }
+        scoreList[i] = {...scoreList[i], score: scores[scoreList[i].id]};
     };
 
     function OnClickRestart() {
@@ -29,6 +36,7 @@
 </script>
 
 <div class="result-wrap">
+    
     <div class="score-wrap">
         {#each scoreList as user}
             <ScoreInterface user={user} maxScore={maxScore} />

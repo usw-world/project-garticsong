@@ -58,18 +58,19 @@ io.on("connection", socket => {
                     message : "reject : the room is full"
                 }
                 io.to(socket.id).emit("enter-room", payload);
+            } else {
+                let enteredUser = {
+                    ...requestPayload.userinfo,
+                    id : socket.id,
+                }
+                PushUser(requestPayload.parameter, requestPayload.userinfo, socket.id);
+                let payload = {
+                    status : "SUCCESS",
+                    room : rooms[`${requestPayload.parameter}`],
+                };
+                io.to(socket.id).emit("enter-room", payload);
+                socket.to(requestPayload.parameter).emit("someone-enters", rooms[`${requestPayload.parameter}`], enteredUser);
             }
-            let enteredUser = {
-                ...requestPayload.userinfo,
-                id : socket.id,
-            }
-            PushUser(requestPayload.parameter, requestPayload.userinfo, socket.id);
-            let payload = {
-                status : "SUCCESS",
-                room : rooms[`${requestPayload.parameter}`],
-            };
-            io.to(socket.id).emit("enter-room", payload);
-            socket.to(requestPayload.parameter).emit("someone-enters", rooms[`${requestPayload.parameter}`], enteredUser);
         } else { // not exist room : reject
             let payload = {
                 status : "REJECT",
@@ -87,7 +88,12 @@ io.on("connection", socket => {
     socket.on("disconnect", (message) => {
         console.log("someone left the game");
         if(message !== "server namespace disconnect") {
-            io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
+            if(rooms[guestBook[socket.id]] 
+            && rooms[guestBook[socket.id]].host.id === socket.id) {
+                io.to(guestBook[socket.id]).emit("host-leaves", socket.id);
+            } else {
+                io.to(guestBook[socket.id]).emit("someone-leaves", socket.id);
+            }
         }
         RemoveUser(guestBook[socket.id], socket.id);
     })

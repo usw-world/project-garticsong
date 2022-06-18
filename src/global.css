@@ -171,12 +171,14 @@ textarea {
 		position: absolute;
 		bottom: -25%;
 		opacity: 0;
+		z-index: 2;
 	}
 	100%
 	{
 		position: absolute;
 		bottom: 0;
 		opacity: 1;
+		z-index: 2;
 	}
 }
 @keyframes fadeUpIn {
@@ -209,5 +211,23 @@ textarea {
 	}
 	100% {
 		transform: rotate(360deg);
+	}
+}
+@keyframes speechBubble {
+	0% {
+		top: 0;
+		opacity: 0;
+	}
+	20% {
+		top: -29%;
+		opacity: 1;
+	}
+	80% {
+		top: -29%;
+		opacity: 1;
+	}
+	100% {
+		top: -58%;
+		opacity: 0;
 	}
 }

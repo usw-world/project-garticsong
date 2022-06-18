@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { PlayAudio, game } from '../store';
+    import UserImageBox from "../UserImageBox.svelte";
     let thisGame;
     game.subscribe(value => {
         thisGame = value;
@@ -22,13 +23,13 @@
 <div class="answerer-board">
     <div class="question-title">
         <span>Good job!</span><br>
-        {thisGame.room.lastQuestion.title}
+        {thisGame.room.lastQuestion.videoInfo.originTitle}
     </div>
     <div class="answerer-info">
         <div class="imagebox">
             <div class="boxframe"></div>
             <div class="image-frame">
-                <img src="/images/character-tambo.svg" alt="">
+                <UserImageBox imageNumber={user.profileImage} height={"100%"} />
             </div>
         </div>
         <div class="answerer-name">
@@ -50,6 +51,7 @@
         box-sizing: border-box;
         text-align: center;
         animation: fadeUpInAbs 400ms ease 1 forwards;
+        z-index: 2;
     }
     .question-title {
         font-size: 4rem;
@@ -98,13 +100,14 @@
     .answerer-info>.imagebox .image-frame {
         position: absolute;
         width: calc(100% - 1rem);
+        height: 100%;
         bottom: .5rem; left: .5rem;
         border-radius: 0 0 15rem 15rem;
         box-sizing: border-box;
         text-align: center;
         overflow: hidden;
     }
-    .answerer-info>.imagebox img {
+    /* .answerer-info>.imagebox img {
         vertical-align: middle;
-    }
+    } */
 </style>

@@ -1,4 +1,7 @@
 <script>
+    import { onMount } from 'svelte';
+    import { PlayAudio, tryGuess, game, socket as mainSocket } from '../store';
+
     import UserInfo from '../UserInformation.svelte';
     import Questioner from './Questioner.svelte';
     import LoadingComponent from '../LoadingComponent.svelte';
@@ -7,12 +10,17 @@
     import CurrectAnswerer from "./CurrectAnswerer.svelte";
     import AnswerForm from './AnswerForm.svelte'
     import QuestionerExitAlert from './QuestionerExitAlert.svelte';
-    import { onMount } from 'svelte';
-    import { game, socket as mainSocket } from '../store';
+    import TimeoutAlert from './TimeoutAlert.svelte';
+    import MusicVolumeManager from '../MusicVolumeManager';
 
     export let props;
     let thisGame;
     game.subscribe(value => { thisGame = value });
+
+    let SomeoneTry;
+    tryGuess.subscribe((value) => {
+        SomeoneTry = value.Run;
+    })
 
     let socket;
     mainSocket.subscribe(value => { socket = value; });
@@ -20,6 +28,7 @@
     let isLoaded = false;
     let currectAnswerer = null;
     let isWatingNextRound = false;
+    let questionTimeout = false;
     let bringers = [];
     let WATING_TIME_FOR_RESPONSE = 20000;
 
@@ -98,6 +107,7 @@
         }
     }
     const MessageEventHandler = (eventData) => {
+        console.log(eventData);
         switch(eventData.type) {
             case "connect":
                 PushUserToConnectedUsers(eventData.sender);
@@ -124,13 +134,20 @@
             case "make-questioner":
                 console.log("Now, I'm a questioner!");
                 bringers = [...thisGame.room.users];
-                SendMessageAll({
-                    type: "set-question",
-                    question: {
-                        ...localQuestion,
-                        author: thisGame.player,
-                    },
-                }, true);
+                console.log(localQuestion);
+                if(localQuestion["videoInfo"]) {
+                    SendMessageAll({
+                        type: "set-question",
+                        question: {
+                            ...localQuestion,
+                            author: thisGame.player,
+                        },
+                    }, true);
+                } else {
+                    SendMessage({
+                        type: "skip-question",
+                    }, thisGame.room.host.id);
+                }
                 break;
             case "readied-to-play-music":
                 bringers = bringers.filter(bringer => {
@@ -161,8 +178,11 @@
                     }, true)
                 }
                 break;
+            case "someone-try": 
+                SomeoneTry({ sender: eventData.sender, title: eventData.title });
+                break;
             case "someone-guessed":
-                if(currectAnswerer) return;
+                if(currectAnswerer || questionTimeout) return;
                 isWatingNextRound = true;
                 currectAnswerer = eventData.answerer;
                 game.update(game => {
@@ -175,14 +195,15 @@
                     }
                 })
                 endRound.Run();
-
-                console.log(thisGame);
                 if(!thisGame.isGuest) {
                     let updatedGame = {...thisGame};
-                    let questionerPoint = thisGame.room.setting && thisGame.room.setting.questionerPoint || 100;
-                    let answererPoint = thisGame.room.setting && thisGame.room.setting.answerer || 100;
-                    updatedGame.room.score[thisGame.room.currentQuestion.author.id] = updatedGame.room.score[thisGame.room.currentQuestion.author.id] + questionerPoint;
-                    updatedGame.room.score[eventData.answerer.id] = updatedGame.room.score[eventData.answerer.id] + answererPoint;
+                    let questionerPoint = thisGame.room.config && thisGame.room.config.qs || 100;
+                    let answererPoint = thisGame.room.config && thisGame.room.config.as || 100;
+
+                    let authorId = thisGame.room.currentQuestion.author.id;
+                    let answererId = eventData.answerer.id;
+                    updatedGame.room.score[authorId] += questionerPoint;
+                    updatedGame.room.score[answererId] += answererPoint;
                     game.update(() => updatedGame);
                 }
                 setTimeout(() => {
@@ -262,12 +283,30 @@
                 });
                 console.log(thisGame);
                 break;
+            case "skip-question":
+                CarryNextRound();
+                break;
+            case "show-hint":
+                SeeHint();
+                break;
+            case "question-timeout":
+                if(currectAnswerer) return;
+                questionTimeout = true;
+                isWatingNextRound = true;
+                endRound.Run();
+                setTimeout(() => {
+                    if(!thisGame.isGuest)
+                        CarryNextRound();
+                }, 3000);
+                break;
         }
     }
     function CarryNextRound() {
         let readiedUsers = thisGame.room.readiedUsers;
+
+        console.log(thisGame.room.users)
         console.log(readiedUsers);
-        if(readiedUsers.length>0) {
+        if(readiedUsers.length>0 && thisGame.room.users.length>1) {
             const data = {
                 type: "make-questioner",
             }
@@ -312,10 +351,7 @@
         delete nextSignalChennlList[leftUserId];
         if(leftUserId === thisGame.room.host.id) // if left user is host
             nextHost = {...thisGame.room.subHost};
-
-        console.log(nextHost.id===thisGame.player.id);
-        console.log(nextHost.id);
-        console.log(thisGame.player.id);
+            
         game.update(game => {
             return {
                 ...game,
@@ -332,6 +368,14 @@
                 isGuest: nextHost.id===thisGame.player.id ? false : true, 
             }
         });
+        
+        if(thisGame.room.users.length<=1) {
+            SendMessageAll({
+                type: "end-game",
+                score: thisGame.room.score,
+            }, true);
+        }
+        
         if(!thisGame.isGuest) {
             SendMessageAll({type: "sync-room", updatedRoom: thisGame.room}, true);
         }
@@ -439,8 +483,10 @@
         console.log("sub host was updated : ", thisGame.room);
     }
     const OnFinishQuestion = (questionInfo) => {
+        console.log(questionInfo);
         isLoaded = false;
-        localQuestion = {...questionInfo};
+        localQuestion = questionInfo ? {...questionInfo} : {};
+        console.log(localQuestion); 
         
         const hostId = thisGame.room.host.id;
         let data = { type: "readied-to-question" }
@@ -450,7 +496,7 @@
         let readiedUsers = thisGame.room.readiedUsers;
         if(readiedUsers.indexOf(userId) < 0) {
             readiedUsers.push(userId);
-        }
+        } 
         let remainingUsersNumber = thisGame.room.users.filter(user => {
             return readiedUsers.indexOf(user.id) < 0;
         }).length;
@@ -489,14 +535,18 @@
                     MessageEventHandler(data);
         })
     }
+    let ResetTimer = () => { console.log("usoock") };
     function ReadyToAnswer(question) {
         isWatingNextRound = false;
+        questionTimeout = false;
         currectAnswerer = null;
+        ResetTimer();
         game.update(game => {
             return {
                 ...game,
                 room: {
                     ...thisGame.room,
+                    showingHint: false,
                     currentQuestion: question,
                 }
             }
@@ -531,12 +581,13 @@
                 endRound.callback();
         }
     }
-    function SubmitAnswer(title) {
+    function SubmitAnswer(title, originTitle) {
         const data = {
             type: "submit-answer",
             title,
         };
         SendMessage(data, thisGame.room.currentQuestion.author.id);
+        SendMessageAll({type: "someone-try", title: originTitle}, true);
     }
     let restartingQueue;
     let restartTimeout;
@@ -558,6 +609,27 @@
             SendMessageAll(data, true);
         }, WATING_TIME_FOR_RESPONSE);
     }
+    function SeeHint() {
+        game.update(game => {
+            return {
+                ...game,
+                room: {
+                    ...thisGame.room,
+                    showingHint: true,
+                }
+            }
+        })
+    }
+    function ShowHint() {
+        PlayAudio("/soundEffects/hint.wav");
+        const data = {
+            type: "show-hint",
+        }
+        SendMessageAll(data, true);
+    }
+    function OnTimeout() {
+        SendMessageAll({ type: "question-timeout" }, true);
+    }
 </script>
 
 <div class="room-wrap">
@@ -565,25 +637,19 @@
         <UserInfo users={thisGame.room.users}></UserInfo>
     </div>
     <div class="room-right">
-        {#if !isLoaded}
-                <LoadingComponent />
+        {#if thisGame.room.gameDone}
+            <ResultScreen
+                users={thisGame.room.users}
+                scores={thisGame.room.finalScore}
+                RestartGame={RestartGame}
+            />
+        {:else if !isLoaded}
+            <LoadingComponent />
         {:else}
             {#if !localQuestion}
                 <div class="box-wrapper">
                     <Questioner OnFinish={OnFinishQuestion}></Questioner>
                 </div>
-            {:else if thisGame.room.gameDone}
-                <ResultScreen
-                    users={thisGame.room.users}
-                    scores={thisGame.room.finalScore}
-                    RestartGame={RestartGame}
-                />
-            {:else if isWatingNextRound}
-                {#if !currectAnswerer}
-                    <QuestionerExitAlert />
-                {:else}
-                    <CurrectAnswerer user={currectAnswerer}/>
-                {/if}
             {:else}
                 {#if thisGame.room.currentQuestion.author.id !== thisGame.player.id}
                     <AnswerForm 
@@ -591,17 +657,54 @@
                         startRound={startRound}
                         endRound={endRound}
                         SubmitAnswer={SubmitAnswer}
+                        bind:ResetTimer={ResetTimer}
                     />
+                    {#if isWatingNextRound}
+                        {#if questionTimeout}
+                            <TimeoutAlert />
+                        {:else if !currectAnswerer}
+                            <QuestionerExitAlert />
+                        {:else}
+                            <CurrectAnswerer user={currectAnswerer}/>
+                        {/if}
+                    {/if}
                 {:else}
-                    <QuestionUserInterface />
+                    <QuestionUserInterface
+                        OnReady={OnReadyToPlayMusic}
+                        startRound={startRound}
+                        endRound={endRound}
+                        SubmitAnswer={SubmitAnswer}
+                        ShowHint={ShowHint}
+                        OnTimeout={OnTimeout}
+                        bind:ResetTimer={ResetTimer}
+                    />
+                    {#if isWatingNextRound}
+                        {#if questionTimeout}
+                            <TimeoutAlert />
+                        {:else if !currectAnswerer}
+                            <QuestionerExitAlert />
+                        {:else}
+                            <CurrectAnswerer user={currectAnswerer}/>
+                        {/if}
+                    {/if}
                 {/if}
             {/if}
         {/if}
     </div>
+    <div class="room-footer">
+        <MusicVolumeManager />
+    </div>
 </div>
 
 <style>
+    .room-footer {
+        position: absolute;
+        left: 0; bottom: -7.2rem;
+        width: 100%;
+        text-align: center;
+    }
     .room-wrap {
+        position: relative;
         display: flex;
         max-width: 1200px;
         width: 100%;
@@ -617,17 +720,20 @@
         height: 100%;
         box-sizing: border-box;
         border: 5px solid transparent;
-        overflow: hidden;
     }
     .room-left {
+        position: relative;
         width: 22%;
         background: linear-gradient(#151515, #151515),
         linear-gradient(-45deg, var(--point-color-a), var(--point-color-b));
         background-origin: border-box;
         background-clip: content-box, border-box;
         border-radius: 0 0 0 10rem;
+        z-index: 2;
     }
     .room-right {
+        position: relative;
+        overflow: hidden;
         width: 78%;
         height: 100%;
         background: linear-gradient(#151515, #151515),
@@ -635,5 +741,6 @@
         background-origin: border-box;
         background-clip: content-box, border-box;
         border-radius: 0 0 10rem 0;
+        z-index: 1;
     }
 </style>

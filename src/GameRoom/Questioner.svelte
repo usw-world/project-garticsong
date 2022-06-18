@@ -8,6 +8,7 @@
     let wrapper;
     let answerInput;
     let answerObj = {};
+    let isDone = false;
     
     onMount(() => {
         PlayAudio("/soundEffects/write-question.wav");
@@ -20,8 +21,10 @@
     let wrotenValues = [];
 
     function OnSubmit(e) {
+        if(isDone) return;
         if(questionOrder >= descriptions.length) {
             wrapper.style.opacity = 0;
+            isDone = true;
             OnFinish(answerObj);
             return;
         }
@@ -45,7 +48,8 @@
                 }
                 break;
             case 1: 
-                answerObj["title"] = value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/ ]/gim, "");
+                answerObj["videoInfo"].originTitle = value;
+                answerObj["title"] = value.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/ ]/gim, "").toLowerCase();
                 wrotenValues[questionOrder] = value;
                 AddWrotenList(questionOrder, "title", value);
                 break;
@@ -149,10 +153,21 @@
     function ResetInput() {
         answerInput.style.animation = "none";
     }
+    function OnTimeout() {
+        if(isDone) return;
+        isDone = true;
+        if(answerObj["videoInfo"] && answerObj["title"]) {
+            wrapper.style.opacity = 0;
+            OnFinish(answerObj);
+        } else {
+            wrapper.style.opacity = 0;
+            OnFinish(null);
+        }
+    }
 </script>
 
 <div class="question-wrap">
-    <Timer />
+    <Timer props={{time: 60000, interval: 25, OnTimeout}} />
     <div class="wroten-wrap" bind:this={wrotenWrapper}>
         <ul class="wroten-list" bind:this={wrotenList}>
             <!-- <li class="wroten-item"></li> -->
@@ -162,7 +177,7 @@
         <div class="input-wrap">
             {#if questionOrder < descriptions.length}
                 <div class="question-request">{descriptions[questionOrder]} <br> ({questionOrder+1}/{descriptions.length})</div>
-                <input type="text" class="question-answer" name="answer" placeholder={placeholders[questionOrder]} autocomplete="off" 
+                <input maxlength="150" type="text" class="question-answer" name="answer" placeholder={placeholders[questionOrder]} autocomplete="off" 
                 value={wrotenValues[questionOrder] || ""} bind:this={answerInput} on:click={ResetInput}>
             {:else}
                 <div class="question-request">확인해봐요! 제출한 뒤에는 수정할 수 없어요!</div>
@@ -177,13 +192,14 @@
         width: 6rem;
     } */
     .question-wrap {
+        padding-top: 7rem;
         transition: 400ms ease opacity;
         height: 100%;
     }
     .wroten-wrap {
         transition: height 400ms ease;
         height: 0;
-        padding: 10rem 8rem 0;
+        padding: 5rem 4rem 3rem;
         color: #fff;
         font-size: 2rem;
         font-weight: 700;
@@ -198,7 +214,7 @@
         flex-direction: column;
     }
     .question-form {
-        margin-top: 8rem;
+        margin-top: 3rem;
         width: 100%;
         /* height: 100%; */
         display: flex;

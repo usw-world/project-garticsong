@@ -11,6 +11,7 @@
 
 <style>
     .loading-component {
+        user-select: none;
         display: flex;
         width: 100%;
         height: 100%;

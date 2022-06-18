@@ -1,7 +1,18 @@
 <script>
     import { onMount } from "svelte";
     import { socket as mainSocket } from "./store";
+    import UserImageBox from './UserImageBox.svelte';
     let socket;
+    let currentImageNumber = Math.floor(Math.random() * 6);
+    let MAX_NUMBER = 5;
+
+    const IncreaseNumber = () => {
+        currentImageNumber = (currentImageNumber + 1) % (MAX_NUMBER+1)
+    }
+    const DicreaseNumber = () => {
+        currentImageNumber = (currentImageNumber + MAX_NUMBER) % (MAX_NUMBER+1)
+    }
+
     mainSocket.subscribe(value => { socket = value })
     export let props;
 
@@ -19,7 +30,7 @@
             props.SetPlayerInformation({
                 id: socket.id,
                 name: e.target["username"].value,
-                profileImage: 0
+                profileImage: currentImageNumber,
             });
             props.SetGameState(1);
         })
@@ -47,10 +58,15 @@
         <form class="playerinfo-form outter-frame" bind:this="{userinfomationForm}">
                 <div class="profile-image">
                     <div class="showing-image-frame">
-                        <img src="/images/character-tambo.svg" style="width: 96%; height: 102%;" alt="">
+                        <UserImageBox imageNumber={currentImageNumber} width={"100%"}; height={"100%"} />
                     </div>
-                    <div class="image-list">
-    
+                    <div class="arrows">
+                        <span class="previous" on:click={DicreaseNumber}>
+                            <img src="/images/prev-button.svg" alt="">
+                        </span>
+                        <span class="next" on:click={IncreaseNumber}>
+                            <img src="/images/prev-button.svg" alt="">
+                        </span>
                     </div>
                 </div>
                 <input type="text" name="username" placeholder="이름을 입력해주세요" class="input-username" on:click="{OnClickInput}">
@@ -92,10 +108,43 @@
         margin-left: 2rem;
     }
     .profile-image {
+        position: relative;
         width: 23rem;
         height: 23rem;
         border-radius: 50%;
         border: .8rem solid #fff;
+    }
+    .arrows {
+        position: absolute;
+        top: 0; left: 0;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+        justify-content: center;
+        align-items: center;
+    }
+    .arrows>span {
+        width: 3.4rem;
+        pointer-events: initial;
+        cursor: pointer;
+        opacity: 0.88;
+    }
+    .arrows>span>img {
+        width: 100%;
+    }
+    .arrows>span:hover {
+        opacity: 1;
+    }
+    .arrows>.previous {
+        position: absolute;
+        left: -7.5rem;
+    }
+    .arrows>.next {
+        position: absolute;
+        right: -7.5rem;
+        transform: rotate(180deg);
     }
     .intro-right {
         width: 100%;
@@ -128,12 +177,6 @@
         justify-content: center;
         align-items: flex-end;
         overflow: hidden;
-    }
-    .showing-image-frame>img {
-        display: inline-block;
-        width: 100%;
-        height: 100%;
-        vertical-align: middle;
     }
     .input-username {
         padding: 0 2rem;

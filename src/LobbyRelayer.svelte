@@ -68,6 +68,12 @@
             console.log(userId);
             props.RemoveUser(userId);
         });
+        socket.on("host-leaves", () => {
+            document.querySelector('.host-leaves-alert').style.display = "flex";
+            setTimeout(() => {
+                window.location.href = "/";
+            }, 3000);
+        })
     })
 
     async function JoinRoom(param) {
@@ -85,8 +91,14 @@
                     props.SetInviteLink(payload.room.roomId);
                 }
                 if(payload.status === "REJECT") {
-                    // window.location = "https://garticsong.herokuapp.com/";
-                    window.location = "http://localhost:2000/";
+                    switch(payload.message) {
+                        case "reject : not exist room":
+                            props.SetGameState(3)
+                            break;
+                        case "reject : the room is full":
+                            props.SetGameState(4)
+                            break;
+                    }
                 }
             })
             let payload = {
@@ -190,9 +202,15 @@
     function OnIceCandidate(e) {
         if(e.candidate) socket.emit("newIceCandidate", e.candidate);
     }
+    // alert of users are not enough to start >>
+    let showingAlert = false;
     function OnClickStartButton() {
-        console.log(thisGame.room);
-        socket.emit("game-start", thisGame.room);
+        if(thisGame.room.users.length < 2) {
+            showingAlert = true;
+        } else {
+            // console.log(thisGame.room);
+            socket.emit("game-start", thisGame.room);
+        }
     }
 </script>
 
@@ -202,9 +220,55 @@
             <StartButton></StartButton>
         {/if}
     </button>
+    <div class="alert-not-enough" style={`
+        top: ${showingAlert ? "0" : "10rem"};
+        opacity: ${showingAlert ? "1" : "0"};
+    `}>
+        <div class="alert-wrap" style="{`pointer-events: ${showingAlert ? "initial" : "none"};`}">
+            <div class="alert-image-wrap">
+                <img src="/images/not-enough.svg" alt="">
+            </div>
+            매우 안타까운 일이지만,<br>
+            친구가 없으면 게임을 시작할 수 없어요...<br>
+            <button class="acept-button" on:click={() => { showingAlert = false; }}>
+                슬퍼요
+            </button>
+        </div>
+    </div>
+    <div class="host-leaves-alert">
+        <div class="alert-box">
+            호스트가 도망쳤어요!
+        </div>
+    </div>
 </div>
 
 <style>
+    .host-leaves-alert {
+        position: absolute;
+        top: 0; left: 0;
+        display: none;
+        width: 100%;
+        height: 100%;
+        color: #232323;
+        font-size: 2.2rem;
+        font-weight: 900;
+        z-index: 3;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+        background-color: rgba(0, 0, 0, .5);
+    }
+    .alert-box {
+        display: flex;
+        width: 36rem;
+        height: 12rem;
+        background-color: #fff;
+        border: .3rem solid #232323;
+        border-radius: 2rem;
+        box-sizing: border-box;
+        justify-content: center;
+        align-items: center;
+    }
     .start-button {
         background: none;
         border: 0;
@@ -213,5 +277,39 @@
         margin-top: 5rem;
         width: 100%;
         text-align: center;
+    }
+    .alert-not-enough {
+        transition: opacity 400ms ease,
+                    top 400ms ease;
+        position: fixed;
+        top: 0; left: 0;
+        display: flex;
+        width: 100%;
+        height: 100%;
+        font-size: 1.9rem;
+        font-weight: 700;
+        justify-content: center;
+        align-items: center;
+        pointer-events: none;
+    }
+    .alert-wrap {
+        width: 40%;
+        padding: 2rem 2rem 4rem;
+        background-color: #121212;
+        background: linear-gradient(to right, #121212, #272727, #121212);
+        pointer-events: initial;
+        border: .5rem solid #fff;
+        border-radius: 5rem;
+        line-height: 1.45;
+    }
+    .acept-button {
+        padding: 1.2rem 2.2rem 1rem;
+        margin-top: 2rem;
+        border-radius: 2.7rem;
+        cursor: pointer;
+    }
+    .alert-image-wrap {
+        padding: 4rem 15rem 6rem;
+        box-sizing: border-box;
     }
 </style>

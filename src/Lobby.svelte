@@ -7,7 +7,7 @@
     import SettingInterface from "./SettingInterface.svelte";
     import { game, PlayAudio } from "./store";
     let thisGame;
-    let showingSetting = true/* false */;
+    let showingSetting = false;
     game.subscribe(game => { thisGame = game });
 
     export let props;

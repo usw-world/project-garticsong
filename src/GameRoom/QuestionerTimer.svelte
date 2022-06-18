@@ -1,5 +1,5 @@
 <script>
-    import { onDestroy, onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import { game } from "../store";
     let thisGame;
     export let widthRatio;
@@ -23,7 +23,7 @@
             repeater = TimerInterval();
         };
         repeater = TimerInterval();
-    });
+    })
     onDestroy(() => {
         clearInterval(repeater);
         currentTime = props.startTime;
@@ -48,7 +48,7 @@
 
 {#if props.time}
     <div class="timer-wrap" style="{`
-        width: ${widthRatio ? widthRatio+'%' : 80+"rem "};
+        width: ${widthRatio ? widthRatio+'%' : 40+"rem "};
     `}">
         <div class="timer-trail">
             <div class="timer-fill" style={`width: ${currentWidth};`}></div>
@@ -62,18 +62,18 @@
 
 <style>
     .timer-wrap {
-        margin: 0 auto 0;
+        margin: 2rem auto 2rem;
         padding: 1rem 2rem;
-        border: .5rem solid #fff;
+        border: .4rem solid #fff;
         box-sizing: border-box;
         border-radius: 2.5rem;
         background-color: rgba(255, 255, 255, .2);
     }
     .timer-trail {
-        border: .3rem solid var(--point-color-b);
-        height: 1.4rem;
+        /* border: .2rem solid var(--point-color-b); */
+        height: 1.2rem;
         display: flex;
-        border-radius: .7rem;
+        border-radius: .6rem;
         box-sizing: border-box;
         background-color: #fff;
         overflow: hidden;
@@ -81,8 +81,6 @@
         align-items: center;
     }
     .timer-fill {
-        position: relative;
-        left: -0.1rem;
         width: 0%;
         height: 102%;
         background-color: var(--point-color-b);

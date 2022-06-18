@@ -2,6 +2,8 @@
     import { onMount } from 'svelte';
 
     import { game, socket as mainSocket } from "./store";
+    import FullroomError from './FullroomError.svelte';
+    import NotExistRoom from './NotExistRoom.svelte';
     let socket;
     mainSocket.subscribe(value => { socket = value; })
 
@@ -22,6 +24,7 @@
         LOBBY: 1,
         ROOM: 2,
         NOT_EXIST_ROOM: 3,
+        FULL_ROOM: 4,
     };
     let currentState = 0;
     
@@ -117,13 +120,15 @@
 {:else}
 <div class="container" bind:this="{container}">
     {#if currentState===gameStateList.INTRO}
-    <Intro props={props}></Intro>
+        <Intro props={props}></Intro>
     {:else if currentState===gameStateList.LOBBY}
-    <Lobby props={props}></Lobby>
+        <Lobby props={props}></Lobby>
     {:else if currentState===gameStateList.ROOM}
-    <GameRoom props={props}></GameRoom>
+        <GameRoom props={props}></GameRoom>
     {:else if currentState===gameStateList.NOT_EXIST_ROOM}
-    not exixt room
+        <NotExistRoom />
+    {:else if currentState===gameStateList.FULL_ROOM}
+        <FullroomError />
     {/if}
 </div>
 {/if}
