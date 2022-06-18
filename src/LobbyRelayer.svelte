@@ -39,18 +39,7 @@
 
     onMount(() => {
         let url = new URL(document.location.href);
-        let param = url.searchParams.get("jr");
-        if(!param) {// is host
-            game.update(game => {
-                return {
-                    ...game,
-                    isGuest : false,
-                };
-            });
-            HostRoom();
-        } else {
-            JoinRoom(param);
-        }
+        
         socket.on("someone-enters", (updatedRoom, user) => {
             console.log("enter user id ", user.id);
             game.update(game => {
@@ -74,13 +63,25 @@
                 window.location.href = "/";
             }, 3000);
         })
+
+        let param = url.searchParams.get("jr");
+        if(!param) {// is host
+            game.update(game => {
+                return {
+                    ...game,
+                    isGuest : false,
+                };
+            });
+            HostRoom();
+        } else {
+            JoinRoom(param);
+        }
     })
 
     async function JoinRoom(param) {
         if(param) {
             socket.on("enter-room", (payload) => {
                 if(payload.status === "SUCCESS") {
-                    thisGame.room = payload.room;
                     game.update(game => {
                         return {
                             ...game,

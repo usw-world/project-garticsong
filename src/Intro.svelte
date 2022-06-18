@@ -29,11 +29,12 @@
         document.querySelector(".input-username").focus();
         userinfomationForm.addEventListener("submit", (e) => {
             e.preventDefault();
+            if(!socket.id) return;
             if(e.target["username"].value.trim() === "") {
                 OnInputError();
                 return;
             }
-
+            
             props.SetPlayerInformation({
                 id: socket.id,
                 name: e.target["username"].value,
