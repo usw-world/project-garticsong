@@ -14,20 +14,14 @@
         PlayAudio("/soundEffects/result-screen.wav");
     })
 
-    let maxScore = Object.values(scores).reduce((a, b) => {
+    let maxScore = 0;
+    maxScore = scores && Object.values(scores).reduce((a, b) => {
         return Math.max(a, b);
     });
     console.log(maxScore);
     let scoreList = [...users];
-    // let bestPerformer = scoreList[0];
-    // let bestScore = 0;
     for(let i=0; i<scoreList.length; i++) {
-        // let score = scores[scoreList[i].id];
-        // if(bestScore < score) {
-        //     bestPerformer = scoreList[i];
-        //     bestScore = score;
-        // }
-        scoreList[i] = {...scoreList[i], score: scores[scoreList[i].id]};
+        scoreList[i] = {...scoreList[i], score: scores ? scores[scoreList[i].id] : 0}; 
     };
 
     function OnClickRestart() {

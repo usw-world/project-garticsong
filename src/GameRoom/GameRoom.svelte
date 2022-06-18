@@ -633,6 +633,9 @@
 </script>
 
 <div class="room-wrap">
+    <div class="room-header">
+        
+    </div>
     <div class="room-left">
         <UserInfo users={thisGame.room.users}></UserInfo>
     </div>
