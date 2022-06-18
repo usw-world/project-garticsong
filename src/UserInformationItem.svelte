@@ -13,10 +13,8 @@
     })
     onMount(() => {
         let updatedObj = {...tryGuessObj};
-        console.log(updatedObj);
         updatedObj.OnTryGuess[info.id] = SayAnswer;
         tryGuess.set(updatedObj);
-        console.log(tryGuessObj);
     })
     let speechBubble;
     let speechScript = "";

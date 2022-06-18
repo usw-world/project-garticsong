@@ -111,6 +111,8 @@
         switch(eventData.type) {
             case "connect":
                 PushUserToConnectedUsers(eventData.sender);
+                console.log("sender", eventData.sender);
+                console.log("connectedUsers", connectedUsers);
                 let uncheckedUsers = [...thisGame.room.users];
                 thisGame.connectedUsers.forEach(user => {
                     let sender = uncheckedUsers.find(item => item.id === user.id);
