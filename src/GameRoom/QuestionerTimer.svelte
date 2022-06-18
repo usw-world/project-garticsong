@@ -19,6 +19,7 @@
     let repeater;
     onMount(() => {
         ResetTimer = () => {
+            clearInterval(repeater);
             currentTime = props.startTime;
             repeater = TimerInterval();
         };
