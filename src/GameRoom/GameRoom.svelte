@@ -127,7 +127,6 @@
                 "stun:stun.sigmavoip.com:3478",
                 "stun:stun.sip.us:3478",
                 "stun:stun.sipdiscount.com:3478",
-                "stun:stun.sipgate.net:10000",
                 "stun:stun.sipgate.net:3478",
                 "stun:stun.siplogin.de:3478",
                 "stun:stun.sipnet.net:3478",
@@ -183,10 +182,10 @@
                 "stun:stun.nextcloud.com:443",
                 "stun:relay.webwormhole.io:3478",
 
-                'turn:numb.viagenie.ca',
+                // 'turn:numb.viagenie.ca',
             ],
-            username: 'webrtc@live.com',
-            credential: 'muazkh',
+            // username: 'webrtc@live.com',
+            // credential: 'muazkh',
         },
     ]};
 
@@ -224,10 +223,11 @@
     }
     function HandleNewCandidate(pc, payload) {
         console.log(payload);
+        console.log(pc);
         if(pc.remoteSocketId === payload.guestSocketId)
             pc.addIceCandidate(payload.candidate)
             .then(
-                () => { /* console.log("Never mind I'll find someone like you."); */ },
+                () => { console.log(thisGame); },
                 (error) => { console.error(error); }
             );
     }

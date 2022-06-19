@@ -48,7 +48,6 @@ io.on("connection", socket => {
             candidate: candidate,
             guestSocketId: socket.id
         }
-        console.log("sender of nic", guestBook[socket.id]);
         io.to(guestBook[socket.id]).emit("newIceCandidate", payload);
         // socket.broadcast.emit("newIceCandidate", payload);
     })
