@@ -17,7 +17,7 @@
     });
 
     let descriptions = ["재생할 영상의 주소(URL)를 입력해요!", "제목을 입력해요! 공백, 특수문자는 무시돼요!", "문제를 맞출 수 있게 설명을 적어요!", "오랫동안 아무도 못 맞추면 힌트를 보여줘요!"];
-    let placeholders = ["https://www.youtube.com/watch?v=pKv_wua6kFE", "Dragon Rider", "영어 제목\nTwo Steps From Hell - oooooo ooooo", "용 기수, Dooooo Roooo"]
+    let placeholders = ["https://www.youtube.com/watch?v=Jh4QFaPmdss", "TOMBOY", "영어 제목\nG-IDLE - ○○○○○○", "남성스러운 여성, T○○B○○"]
     let wrotenValues = [];
 
     function OnSubmit(e) {
