@@ -223,6 +223,7 @@
         console.log(thisGame);
     }
     function HandleNewCandidate(pc, payload) {
+        console.log(payload);
         if(pc.remoteSocketId === payload.guestSocketId)
             pc.addIceCandidate(payload.candidate)
             .then(
@@ -231,6 +232,7 @@
             );
     }
     function OnIceCandidate(e) {
+        console.log("On Ice Candidate", e);
         if(e.candidate) socket.emit("newIceCandidate", e.candidate);
     }
     function OnMessage(e) {

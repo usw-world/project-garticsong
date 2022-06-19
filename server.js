@@ -48,7 +48,9 @@ io.on("connection", socket => {
             candidate: candidate,
             guestSocketId: socket.id
         }
-        socket.broadcast.emit("newIceCandidate", payload);
+        console.log("sender of nic", guestBook[socket.id]);
+        io.to(guestBook[socket.id]).emit("newIceCandidate", payload);
+        // socket.broadcast.emit("newIceCandidate", payload);
     })
     socket.on("join-room", (requestPayload) => {
         if(rooms[`${requestPayload.parameter}`]) {
