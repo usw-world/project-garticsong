@@ -2,6 +2,7 @@
     import Guide01 from './Guides/Guide01.svelte';
     import Guide02 from './Guides/Guide02.svelte';
     import Guide03 from './Guides/Guide03.svelte';
+    import Guide04 from './Guides/Guide04.svelte';
     import Guide05 from './Guides/Guide05.svelte';
     import Guide06 from './Guides/Guide06.svelte';
 
@@ -48,7 +49,7 @@
         </li>
         <li class="guide-item">
             <span class="svg-wrap">
-                <!--  -->
+                <Guide04 />
             </span>
             <span class="textbox">
                 규칙에 맞게 문제를 출제하세요! 친구들이 쉽게 알 수 있게 힌트를 줄 수 있어요!
