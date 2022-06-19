@@ -49,8 +49,6 @@
                 "stun:stun.voipbuster.com",
                 "stun:stun.voipstunt.com",
                 "stun:stun.voxgratia.org",
-                "s1.taraba.net:3478",
-                "s2.taraba.net:3478",
                 "stun.12connect.com:3478",
                 "stun.12voip.com:3478",
                 "stun.1und1.de:3478",
