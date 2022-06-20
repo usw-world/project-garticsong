@@ -115,7 +115,7 @@ io.on("connection", socket => {
         }
     })
     socket.on("offer-to-another", (offer, payload) => {
-        io.to([payload.targetUser.id]).emit("offer-answer", offer, socket.id);
+        io.to(payload.targetUser.id).emit("offer-answer", offer, socket.id);
     })
     socket.on("successed-connecting-all", (room) => {
         connectingRooms[room.roomId] = connectingRooms[room.roomId].filter(user => {

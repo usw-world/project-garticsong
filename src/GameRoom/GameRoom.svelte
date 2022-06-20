@@ -37,10 +37,10 @@
             'urls':[
                 "stun:stun.l.google.com:19302",
                 "stun:stun1.l.google.com:19302",
-                // 'turn:numb.viagenie.ca',
+                'turn:numb.viagenie.ca',
             ],
-            // username: 'webrtc@live.com',
-            // credential: 'muazkh',
+            username: 'webrtc@live.com',
+            credential: 'muazkh',
         },
     ]};
     console.log(iceConfiguration);
@@ -77,23 +77,31 @@
         })
         console.log(thisGame);
     }
-    function HandleNewCandidate(pc, payload) {
-        console.log(payload);
-        console.log(pc);
-        if(pc.remoteSocketId === payload.guestSocketId)
-            pc.addIceCandidate(payload.candidate)
+    async function HandleNewCandidate(pc, payload) {
+        if(pc.remoteSocketId === payload.guestSocketId) {
+            await pc.addIceCandidate(payload.candidate)
             .then(
                 () => { console.log(thisGame); },
                 (error) => { console.error(error); }
             );
+        }
     }
     function OnIceCandidate(e) {
-        console.log("On Ice Candidate", e);
         if(e.candidate) socket.emit("newIceCandidate", e.candidate);
     }
-    function OnMessage(e) {
-        console.log("this is in func:OnMessage", e);
-        const channel = e.channel;
+    function OnDataChannel(event) {
+        // const channel = event.channel;
+        // channel.onmessage = (e) => {
+        //     const data = JSON.parse(e.data);
+        //     MessageEventHandler(data);
+        // }
+    }
+    function OnDataChannelRemoteSide(event, senderId) {
+        console.log(event);
+        const channel = event.channel;
+        channel.onopen = OnOpenChannel;
+        channel.onclose = OnCloseChannel;
+        PushDataChannelToArray(channel, senderId);
         channel.onmessage = (e) => {
             const data = JSON.parse(e.data);
             MessageEventHandler(data);
@@ -326,12 +334,14 @@
     }
     function OnOpenChannel(e) {
         console.log("Channel is Opened ", e);
-        e.currentTarget.send(JSON.stringify({
-            sender : thisGame.player,
-            type : "connect"
-        }));
+        SendMessage({ type: "connect"}, e.currentTarget.userId);
+        // e.currentTarget.send(JSON.stringify({
+        //     sender : thisGame.player,
+        //     type : "connect"
+        // }));
     }
     function OnCloseChannel(e) { 
+        console.log("Channel is Closed ", e);
         // first, room is will updated. and will share room other users.
         let leftUserId = e.target.userId;
         let updatedUsers = [...thisGame.room.users];
@@ -405,16 +415,16 @@
             let localPeerConnection =  new RTCPeerConnection(iceConfiguration);
             PushPeerConnectionToArray(localPeerConnection, senderId);
             localPeerConnection.onicecandidate = OnIceCandidate;
-            localPeerConnection.ondatachannel = OnMessage;
+            localPeerConnection.ondatachannel = (e) => { OnDataChannelRemoteSide(e, senderId) };
             localPeerConnection.remoteSocketId = senderId;
-            socket.on("newIceCandidate", (payload) => {
+            socket.on("newIceCandidate", async (payload) => {
                 HandleNewCandidate(localPeerConnection, payload);
             });
-
-            let channel = await localPeerConnection.createDataChannel('signal');
-            channel.onopen = OnOpenChannel;
-            channel.onclose = OnCloseChannel;
-            PushDataChannelToArray(channel, senderId);
+            
+            // let channel = await localPeerConnection.createDataChannel('remoteside-signal');
+            // channel.onopen = OnOpenChannel;
+            // channel.onclose = OnCloseChannel;
+            // PushDataChannelToArray(channel, senderId);
 
             localPeerConnection.setRemoteDescription(offer);
             const answer = await localPeerConnection.createAnswer();
@@ -432,7 +442,6 @@
             let localPeerConnection =  new RTCPeerConnection(iceConfiguration);
             PushPeerConnectionToArray(localPeerConnection, payload.targetUser.id);
             localPeerConnection.onicecandidate = OnIceCandidate;
-            localPeerConnection.ondatachannel = OnMessage;
             socket.on("newIceCandidate", (payload) => {
                 HandleNewCandidate(localPeerConnection, payload);
             })
@@ -440,9 +449,14 @@
             let channel = await localPeerConnection.createDataChannel('signal');
             channel.onopen = OnOpenChannel;
             channel.onclose = OnCloseChannel;
+            channel.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                MessageEventHandler(data);
+            };
             PushDataChannelToArray(channel, payload.targetUser.id);
 
             const offer = await localPeerConnection.createOffer();
+            console.log(offer.sdp);
             localPeerConnection.setLocalDescription(offer);
             socket.emit("offer-to-another", offer, payload)
         })
@@ -512,6 +526,7 @@
             ...data,
             sender: thisGame.player,
         };
+        console.log("Send Message : ", data);
         if(thisGame.player.id !== targetUserId && thisGame.signalChannels[targetUserId])
             thisGame.signalChannels[targetUserId].send(JSON.stringify(data));
         else 
