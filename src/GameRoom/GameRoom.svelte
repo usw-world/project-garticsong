@@ -37,10 +37,13 @@
             'urls':[
                 "stun:stun.l.google.com:19302",
                 "stun:stun1.l.google.com:19302",
-                'turn:numb.viagenie.ca',
+                "stun:stun2.l.google.com:19302",
+                "stun:stun3.l.google.com:19302",
+                "stun:stun4.l.google.com:19302",
+                // 'turn:numb.viagenie.ca',
             ],
-            username: 'webrtc@live.com',
-            credential: 'muazkh',
+            // username: 'webrtc@live.com',
+            // credential: 'muazkh',
         },
     ]};
     console.log(iceConfiguration);
@@ -436,6 +439,7 @@
             peerConnection.remoteSocketId = answererId;
             if(peerConnection) {
                 peerConnection.setRemoteDescription(answer);
+                console.log(peerConnection.canTrickleIceCandidates);
             }
         });
         socket.on("offer-description", async (payload) => { // local-1

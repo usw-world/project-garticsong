@@ -14,6 +14,7 @@ const io = new Server(server, {
         origin: [
             "http://localhost:2000",
             "http://10.30.5.129:2000",
+            "http://192.168.219.101:2000",
             "https://garticsong.herokuapp.com",
         ],
     }

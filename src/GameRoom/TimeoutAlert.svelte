@@ -1,6 +1,17 @@
+<script>
+    import { game } from '../store';
+    let thisGame;
+    game.subscribe(value => {
+        thisGame = value;
+    })
+</script>
+
 <div class="alert-wrap">
     <div class="alert">
         시간 초과!
+        <div class="originTitle">
+            {thisGame.room.currentQuestion.videoInfo.originTitle}
+        </div>
     </div>
     <div class="image-wrap">
         <img src="/images/timeout.svg" alt="">
@@ -23,8 +34,12 @@
     .alert {
         padding-top: 6rem;
         text-align: center;
-        font-size: 3.3rem;
+        font-size: 1.9rem;
         font-weight: 900;
+    }
+    .alert>.originTitle {
+        font-size: 3.3rem;
+        line-height: 1.5;
     }
     .image-wrap {
         padding: 1rem 21rem 3rem;
